@@ -6,9 +6,9 @@
 
 count=1
 
-for param in "$*"; do
+for param in "$@"; do
 
-    echo "\$* Parameter #$count = $param"
+    echo "\$@ Parameter #$count = $param"
 
     count=$(( $count + 1 ))
 
