@@ -1,108 +1,56 @@
-# devops-netology
-     1.	Найдите полный хеш и комментарий коммита, хеш которого начинается на aefea.
+Домашнее задание 03-sysadmin-01-terminal
 
-Решение: Коммит найден с помощью команды “git show aefea”
+1.	По умолчанию Vagrant выделяет VM следующие ресурсы
 
-Ответ: commit aefead2207ef7e2aa5dc81a34aedf0cad4c32545
+•	Memory: 1024 Mb
 
-Author: Alisdair McDiarmid <alisdair@users.noreply.github.com>
+•	CPU: 2
 
-Date:   Thu Jun 18 10:29:58 2020 -0400
+2.	Для изменения конфигурации VM используется конфигурационный файл Vagrantfile
 
-Update CHANGELOG.md
+•	Добавляется строка config.vm.provider "virtualbox" do |v|
 
-     2.	Какому тегу соответствует коммит 85024d3?
+•	Для изменения объема памяти добавляется строка v.memory =
 
-Решение: Найдено с помощью команды “git tag --points-at 85024d3”
+•	Для изменения количества ядер v.cpus =
 
-Ответ: v0.12.23
+3.	Для регулирования длинны журнала history используются 2 переменных
 
-     3.	Сколько родителей у коммита b8d720? Напишите их хеши.
+•	HISTFILESIZE – количество строк, которое сохранятеся в журнале истории команд. Строки 730-734
 
-Решение: Найдено с помощью команды “ git show --pretty=%P b8d720”
+•	HISTSIZE – количество команд которе храниться в истории в рамках текущей сессии. Строки 742-745
 
-(опция –pretty меняет формат вывода, а %P Отдает хеш родительских коммитов)
+4.	ignoreboth –директива для одновременного использования директив ignorespace и ignoredups переменной HISTCONTROL.
 
-Ответ: 
+5.	{} – используются при написании составных команд (скриптов). Все команды находящиеся между ними выполняются в текущей среде оболочки. Строки 220-22
 
-56cd7859e05c36c06b56d013b55a252d0bb7e158 9ea88f22fc6269854151c571162c5bcf958bee2b
+6.	touch {1..100000} – создаст 100000 файлов в текущей директории.
 
-У коммита 2 родителя т.к. это мерж коммит.
+    touch {1..300000} – вызовет ошибку «Argument list too long» т.к. представленный список аргументов не вмещается в буфер 128кб
 
-     4.	Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
+7.	[[ -d /tmp ]] – возвращает 1 (true) если /tmp существует и является каталогом.
 
-Решение: Найдено с помощью команды git log v0.12.23..v0.12.24 --pretty=oneline (--pretty=oneline что бы в выводе были только хеши и комментарии).
+8.	Моих знаний в скриптинге не хватает для правильного вывода результата. Также я не понимаю как прилепить конструкцию [[]] к команде type -a bash с целью правильной сортировки результата.
 
-Ответ:
+    Я получил требуемый результат другим путем
 
-33ff1c03bb960b332be3af2e333462dde88b279e (tag: v0.12.24) v0.12.24
+•	mkdir /tmp/new_path_directory
 
-b14b74c4939dcab573326f4e3ee2a62e23e12f89 [Website] vmc provider links
+•	cp /bin/bash /tmp/new_path_directory/
 
-3f235065b9347a758efadc92295b540ee0a5e26e Update CHANGELOG.md
+•	export PATH=$PATH:/tmp/new_path_directory
 
-6ae64e247b332925b872447e9ce869657281c2bf registry: Fix panic when server is unreachable
+    #получаю порядок каталогов, по которым идет проверка
 
-5c619ca1baf2e21a155fcdb4c264cc9e24a2a353 website: Remove links to the getting started guide's old location
+•	echo $PATH
 
-06275647e2b53d97d4f0a19a0fec11f6d69820b5 Update CHANGELOG.md
+    #меняю порядок каталогов, 
 
-d5f9411f5108260320064349b757f55c09bc4b80 command: Fix bug when using terraform login on Windows
+•	export PATH=/tmp/new_path_directory:/usr/bin:/sbin:/bin:/usr/local/bin:/snap/bin
 
-4b6d06cc5dcb78af637bbb19c198faff37a066ed Update CHANGELOG.md
+    #в результате type -a bash дает верный вывод с нужным порядком каталогов нахождения
 
-dd01a35078f040ca984cdd349f18d0b67e486c35 Update CHANGELOG.md
+9.	At – используется для однократного запуска задачи в указанное время 
 
-225466bc3e5f35baa5d07197bbc079345b77525e Cleanup after v0.12.23 release
-
-К сожалению, в вывод команды попадает и коммит с тэгом v0.12.24, я скопировал полный вывод команды, хотя для правильности ответа, возможно, стоило его убрать.
-
-     5.	Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).
-
-Решение: git log -S 'func providerSource(' --pretty=oneline
-
-Для вывода использовал поиск по логу т.к. он выводит хеш коммита с комментарием. Не нашел как искать по рандомным значением в скобках, по этому использовал одну. В вводе был только один коммит.
-
-Ответ:
-
-8c928e83589d90a031f811fae52a81be7153e82f main: Consult local directories as potential mirrors of providers
-
-     6.	Найдите все коммиты в которых была изменена функция globalPluginDirs.
-
-Решение: Аналогично предыдущему git log -S globalPluginDirs --pretty=oneline
-
-Ответ:
-
-35a058fb3ddfae9cfee0b3893822c9a95b920f4c main: configure credentials from the CLI config file
-
-c0b17610965450a89598da491ce9b6b5cbd6393f prevent log output during init
-
-8364383c359a6b738a436d1b7745ccdce178df47 Push plugin discovery down into command package
-
-     7.	Кто автор функции synchronizedWriters?
-    Я не нашел простого решения данной задачи. Git blame и git grep выдавали пустой результат.
-
-    1.	Ищем коммит у которого самое раннее появления данной функции
-
-        git log -S synchronizedWriters –oneline
-
-    2.	Переключаемся на самый ранний из найденых коммитов.
-
-        git checkout 5ac311e2a
-
-    3.	Производим поиск нужной фукции
-
-        git grep 'func synchronizedWriters'
-
-    4.	Узнаем кто создал файл
-
-        git blame synchronized_writers.go
-
-    Ответ:
-
-    Martin Atkins 2017-05-03 16:25:41
-
-
-
-
+        Batch – запускает задачу когда нагрузка системы падает ниже определенного значения. Значение можно указать при вызове atd.
 
