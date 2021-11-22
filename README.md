@@ -1,283 +1,155 @@
-     3.5. Файловые системы
-	 
-1. Узнайте о sparse (разряженных) файлах.
-   ``` 
-       Прочитал, осознал.
-   ```
-2. Могут ли файлы, являющиеся жесткой ссылкой на один объект, иметь разные права доступа и владельца? Почему?
-   ```   
-   Жесткие ссылки не могут иметь различные права доступа т.к. по сути жесткая ссылка - псевдоним файла и права доступа к ссылке определяются правами доступа к файлу.
-   ```
-3. Сделайте vagrant destroy на имеющийся инстанс Ubuntu.
-   ```
-         lsblk
-         NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-         sda                    8:0    0   64G  0 disk 
-         тФЬтФАsda1                 8:1    0  512M  0 part /boot/efi
-         тФЬтФАsda2                 8:2    0    1K  0 part 
-         тФФтФАsda5                 8:5    0 63.5G  0 part 
-           тФЬтФАvgvagrant-root   253:0    0 62.6G  0 lvm  /
-           тФФтФАvgvagrant-swap_1 253:1    0  980M  0 lvm  [SWAP]
-         sdb                    8:16   0  2.5G  0 disk 
-         sdc                    8:32   0  2.5G  0 disk
-   ```
-4. Используя fdisk, разбейте первый диск на 2 раздела: 2 Гб, оставшееся пространство.
-    ````  
-         fdisk /dev/sdb
-         lsblk
-         NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-         sda                    8:0    0   64G  0 disk 
-         тФЬтФАsda1                 8:1    0  512M  0 part /boot/efi
-         тФЬтФАsda2                 8:2    0    1K  0 part 
-         тФФтФАsda5                 8:5    0 63.5G  0 part 
-           тФЬтФАvgvagrant-root   253:0    0 62.6G  0 lvm  /
-           тФФтФАvgvagrant-swap_1 253:1    0  980M  0 lvm  [SWAP]
-         sdb                    8:16   0  2.5G  0 disk 
-         тФЬтФАsdb1                 8:17   0    2G  0 part 
-         тФФтФАsdb2                 8:18   0  511M  0 part 
-         sdc                    8:32   0  2.5G  0 disk 
-    ````
-5. Используя sfdisk, перенесите данную таблицу разделов на второй диск.
-    ```    
-         sfdisk -d /dev/sdb | sfdisk /dev/sdc
-         lsblk
-         NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-         sda                    8:0    0   64G  0 disk 
-         тФЬтФАsda1                 8:1    0  512M  0 part /boot/efi
-         тФЬтФАsda2                 8:2    0    1K  0 part 
-         тФФтФАsda5                 8:5    0 63.5G  0 part 
-           тФЬтФАvgvagrant-root   253:0    0 62.6G  0 lvm  /
-           тФФтФАvgvagrant-swap_1 253:1    0  980M  0 lvm  [SWAP]
-         sdb                    8:16   0  2.5G  0 disk 
-         тФЬтФАsdb1                 8:17   0    2G  0 part 
-         тФФтФАsdb2                 8:18   0  511M  0 part 
-         sdc                    8:32   0  2.5G  0 disk 
-         тФЬтФАsdc1                 8:33   0    2G  0 part 
-         тФФтФАsdc2                 8:34   0  511M  0 part 
-	```
-6. Соберите mdadm RAID1 на паре разделов 2 Гб.
-    ```     
-         mdadm --create --verbose /dev/md0 --level=1 --raid-devices=2 /dev/sdb1 /dev/sdc1
-         cat /proc/mdstat
-         Personalities : [linear] [multipath] [raid0] [raid1] [raid6] [raid5] [raid4] [raid10] 
-         md0 : active raid1 sdc1[1] sdb1[0]
-               2094080 blocks super 1.2 [2/2] [UU]
-	```
-7. Соберите mdadm RAID0 на второй паре маленьких разделов.
-    ```     
-         mdadm --create --verbose /dev/md1 --level=0 --raid-devices=2 /dev/sdb2 /dev/sdc2
-         cat /proc/mdstat
-         Personalities : [linear] [multipath] [raid0] [raid1] [raid6] [raid5] [raid4] [raid10] 
-         md1 : active raid0 sdc2[1] sdb2[0]
-               1042432 blocks super 1.2 512k chunks
-      
-         md0 : active raid1 sdc1[1] sdb1[0]
-               2094080 blocks super 1.2 [2/2] [UU]
-      
-         unused devices: <none>
-	```
-8. Создайте 2 независимых PV на получившихся md-устройствах.
-    ```   
-         pvcreate /dev/md0
-         pvcreate /dev/md1
-         pvdisplay
-         --- Physical volume ---
-         PV Name               /dev/sda5
-         VG Name               vgvagrant
-         PV Size               <63.50 GiB / not usable 0   
-         Allocatable           yes (but full)
-         PE Size               4.00 MiB
-         Total PE              16255
-         Free PE               0
-         Allocated PE          16255
-         PV UUID               Mx3LcA-uMnN-h9yB-gC2w-qm7w-skx0-OsTz9z
-   
-         "/dev/md0" is a new physical volume of "<2.00 GiB"
-         --- NEW Physical volume ---
-         PV Name               /dev/md0
-         VG Name               
-         PV Size               <2.00 GiB
-         Allocatable           NO
-         PE Size               0   
-         Total PE              0
-         Free PE               0
-         Allocated PE          0
-         PV UUID               OCqVcq-89zb-taPA-io5u-mraB-3zot-8XZEsU
-   
-         "/dev/md1" is a new physical volume of "1018.00 MiB"
-         --- NEW Physical volume ---
-         PV Name               /dev/md1
-         VG Name               
-         PV Size               1018.00 MiB
-         Allocatable           NO
-         PE Size               0   
-         Total PE              0
-         Free PE               0
-         Allocated PE          0
-         PV UUID               VNecoA-YEnI-vE2v-XeTC-qgQQ-7uMM-dcBQzy
-	 ``` 
-9. Создайте общую volume-group на этих двух PV.
-    ```
-         vgcreate VG --addtag TEST_VG /dev/md0 /dev/md1
+3.6. Компьютерные сети, лекция 1
+	
+1. Работа c HTTP через телнет.
+         
+         telnet stackoverflow.com 80
+
+         Host 'stackoverflow.com' resolved to 151.101.129.69.
+         Connecting to 151.101.129.69:80...
+         Connection established.
+         To escape to local shell, press 'Ctrl+Alt+]'.
+         GET /questions HTTP/1.0
+         HOST: stackoverflow.com
+
+         HTTP/1.1 301 Moved Permanently
+         cache-control: no-cache, no-store, must-revalidate
+         location: https://stackoverflow.com/questions
+         x-request-guid: d0f4d99e-cd73-43f9-ac51-695bf5bb7ef8
+         feature-policy: microphone 'none'; speaker 'none'
+         content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+         Accept-Ranges: bytes
+         Date: Sun, 21 Nov 2021 17:19:29 GMT
+         Via: 1.1 varnish
+         Connection: close
+         X-Served-By: cache-ams21044-AMS
+         X-Cache: MISS
+         X-Cache-Hits: 0
+         X-Timer: S1637515170.634768,VS0,VE75
+         Vary: Fastly-SSL
+         X-DNS-Prefetch-Control: off
+         Set-Cookie: prov=46437e93-7f5e-aaa8-168c-c9ee1ddc1e16; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
+
+         Connection closing...Socket close.
+
+         Connection closed by foreign host.
+
+         Disconnected from remote host(stackoverflow.com:80) at 20:19:30
+
+         Данный ответ означает, что адрес на короый я обращаюсь - перемещен навсегда. Это связано с тем, что stackoverflow.com отвечвет только на https запросы
+         и с помощью использованных команд telent мы не можем к нему подключиться.
 		 
-         vgdisplay
-         --- Volume group ---
-         VG Name               VG
-         System ID             
-         Format                lvm2
-         Metadata Areas        2
-         Metadata Sequence No  1
-         VG Access             read/write
-         VG Status             resizable
-         MAX LV                0
-         Cur LV                0
-         Open LV               0
-         Max PV                0
-         Cur PV                2
-         Act PV                2
-         VG Size               <2.99 GiB
-         PE Size               4.00 MiB
-         Total PE              765
-         Alloc PE / Size       0 / 0   
-         Free  PE / Size       765 / <2.99 GiB
-         VG UUID               jDGUAE-iT64-CftR-Eevc-fJP2-wihe-n04mcE
-    ```
-10. Создайте LV размером 100 Мб, указав его расположение на PV с RAID0.
-    ```
-         lvcreate -L 100M VG /dev/md1
-         Logical volume "lvol0" created.
-         lvs
-         LV     VG        Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
-         lvol0  TEST_VG   -wi-a----- 100.00m                                                    
-         root   vgvagrant -wi-ao---- <62.54g                                                    
-         swap_1 vgvagrant -wi-ao---- 980.00m
-	```
-11. Создайте mkfs.ext4 ФС на получившемся LV
-     ```
-         mkfs.ext4 /dev/VG/lvol0
-         blkid /dev/VG/lvol0
-         /dev/VG/lvol0: UUID="feabbdd2-658e-4ef2-8d82-f23e56ccd0eb" TYPE="ext4"
-	```
-12. Смонтируйте этот раздел в любую директорию, например, /tmp/new
-    ```
-         mkdir /tmp/new
-         mount /dev/VG/lvol0 /tmp/new/
-         df -h
-         Filesystem                  Size  Used Avail Use% Mounted on
-         udev                        447M     0  447M   0% /dev
-         tmpfs                        99M  700K   98M   1% /run
-         /dev/mapper/vgvagrant-root   62G  1.5G   57G   3% /
-         tmpfs                       491M     0  491M   0% /dev/shm
-         tmpfs                       5.0M     0  5.0M   0% /run/lock
-         tmpfs                       491M     0  491M   0% /sys/fs/cgroup
-         /dev/sda1                   511M  4.0K  511M   1% /boot/efi
-         vagrant                     112G   77G   36G  69% /vagrant
-         tmpfs                        99M     0   99M   0% /run/user/1000
-         /dev/mapper/VG-lvol0         93M   72K   86M   1% /tmp/new
-	```
-13. Поместите туда тестовый файл, например wget https://mirror.yandex.ru/ubuntu/ls-lR.gz -O /tmp/new/test.gz.
-    ```
-         ls /tmp/new
-         lost+found
-         test.gz
-	```
-14. Прикрепите вывод lsblk
-    ```
-         lsblk
-         NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-         sda                    8:0    0   64G  0 disk  
-         тФЬтФАsda1                 8:1    0  512M  0 part  /boot/efi
-         тФЬтФАsda2                 8:2    0    1K  0 part  
-         тФФтФАsda5                 8:5    0 63.5G  0 part  
-           тФЬтФАvgvagrant-root   253:0    0 62.6G  0 lvm   /
-           тФФтФАvgvagrant-swap_1 253:1    0  980M  0 lvm   [SWAP]
-         sdb                    8:16   0  2.5G  0 disk  
-         тФЬтФАsdb1                 8:17   0    2G  0 part  
-         тФВ тФФтФАmd0                9:0    0    2G  0 raid1 
-         тФФтФАsdb2                 8:18   0  511M  0 part  
-           тФФтФАmd1                9:1    0 1018M  0 raid0 
-             тФФтФАVG-lvol0       253:2    0  100M  0 lvm   /tmp/new
-         sdc                    8:32   0  2.5G  0 disk  
-         тФЬтФАsdc1                 8:33   0    2G  0 part  
-         тФВ тФФтФАmd0                9:0    0    2G  0 raid1 
-         тФФтФАsdc2                 8:34   0  511M  0 part  
-           тФФтФАmd1                9:1    0 1018M  0 raid0 
-             тФФтФАVG-lvol0       253:2    0  100M  0 lvm   /tmp/new
-	``` 
-15. Протестируйте целостность файла:
-    ```  
-         gzip -t /tmp/new/test.gz
-         echo $?
-         0
-	```
-16. Используя pvmove, переместите содержимое PV с RAID0 на RAID1
-    ```
-         pvmove /dev/md1
-         lsblk
-         NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-         sda                    8:0    0   64G  0 disk  
-         тФЬтФАsda1                 8:1    0  512M  0 part  /boot/efi
-         тФЬтФАsda2                 8:2    0    1K  0 part  
-         тФФтФАsda5                 8:5    0 63.5G  0 part  
-         тФЬтФАvgvagrant-root   253:0    0 62.6G  0 lvm   /
-         тФФтФАvgvagrant-swap_1 253:1    0  980M  0 lvm   [SWAP]
-         sdb                    8:16   0  2.5G  0 disk  
-         тФЬтФАsdb1                 8:17   0    2G  0 part  
-         тФВ тФФтФАmd0                9:0    0    2G  0 raid1 
-         тФВ   тФФтФАVG-lvol0       253:2    0  100M  0 lvm   /tmp/new
-         тФФтФАsdb2                 8:18   0  511M  0 part  
-           тФФтФАmd1                9:1    0 1018M  0 raid0 
-         sdc                    8:32   0  2.5G  0 disk  
-         тФЬтФАsdc1                 8:33   0    2G  0 part  
-         тФВ тФФтФАmd0                9:0    0    2G  0 raid1 
-         тФВ   тФФтФАVG-lvol0       253:2    0  100M  0 lvm   /tmp/new
-         тФФтФАsdc2                 8:34   0  511M  0 part  
-           тФФтФАmd1                9:1    0 1018M  0 raid0 
-	```
-17. Сделайте --fail на устройство в вашем RAID1 md.
-    ```
-         mdadm --manage /dev/md0 --fail /dev/sdc1
-         mdadm: set /dev/sdc1 faulty in /dev/md0
-         cat /proc/mdstat
-         Personalities : [linear] [multipath] [raid0] [raid1] [raid6] [raid5] [raid4] [raid10] 
-         md1 : active raid0 sdc2[1] sdb2[0]
-               1042432 blocks super 1.2 512k chunks
-      
-         md0 : active raid1 sdc1[1](F) sdb1[0]
-               2094080 blocks super 1.2 [2/1] [U_]
-      
-         unused devices: <none>
-	```
-18. Подтвердите выводом dmesg, что RAID1 работает в деградированном состоянии.
-    ```    
-         dmesg | grep raid	
-         [    3.458877] raid6: sse2x4   gen()  6873 MB/s
-         [    3.506816] raid6: sse2x4   xor()  3728 MB/s
-         [    3.554824] raid6: sse2x2   gen()  4061 MB/s
-         [    3.602831] raid6: sse2x2   xor()  2659 MB/s
-         [    3.650820] raid6: sse2x1   gen()  1886 MB/s
-         [    3.698864] raid6: sse2x1   xor()  1623 MB/s
-         [    3.698866] raid6: using algorithm sse2x4 gen() 6873 MB/s
-         [    3.698868] raid6: .... xor() 3728 MB/s, rmw enabled
-         [    3.698870] raid6: using ssse3x2 recovery algorithm
-         [  295.894943] md/raid1:md0: not clean -- starting background reconstruction
-         [  295.894946] md/raid1:md0: active with 2 out of 2 mirrors
-         [ 3979.638618] md/raid1:md0: Disk failure on sdc1, disabling device.
-                        md/raid1:md0: Operation continuing on 1 devices
-	```
-19. Протестируйте целостность файла, несмотря на "сбойный" диск он должен продолжать быть доступен:	
-	```     
-         gzip -t /tmp/new/test.gz
-         echo $?
-         0
-	```
-20. Погасите тестовый хост, vagrant destroy.
-    ```    
-         [E:\vm\vagrant]$ vagrant halt
-         ==> default: Attempting graceful shutdown of VM...
+2. Повторите задание 1 в браузере, используя консоль разработчика F12.        	
+         
+         Браузер: Firefox Browser 94.0 (64-bit)
+         Код ответа:
+		 
+         GET	
+         scheme: http
+         Host: stackoverflow.com
+         filename: /
+         Address: 151.101.193.69:80
+         Status 301 Moved Permanently
+         Version  HTTP/1.1
+         Transferred 53.12 KB (175.88 KB size)
+		 
+         Долше всего обрабатывался запрос:
+         POST
+         scheme: https
+         host: stats.g.doubleclick.net
+         filename: /j/collect
+		 
+ScreenShot: https://ibb.co/JxK3yxx
+		 
+3. Какой IP адрес у вас в интернете? 
+         
+         178.249.69.182
+		 
+4. Какому провайдеру принадлежит ваш IP адрес? Какой автономной системе AS? Воспользуйтесь утилитой whois
+ 
+         netname:        Miran-Net
+         origin:         AS41722`
 
-         [E:\vm\vagrant]$ vagrant destroy
-             default: Are you sure you want to destroy the 'default' VM? [y/N] y
-         ==> default: Destroying VM and associated drives...
-    ```
+5. Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS? Воспользуйтесь утилитой traceroute
+         
+         traceroute -A 8.8.8.8
+         traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+         1  pfSense.localdomain (10.0.2.2) [*]  0.715 ms  0.658 ms  0.614 ms
+         2  gw.miran.ru (178.249.69.1) [AS41722]  536.591 ms  536.562 ms  536.534 ms
+         3  vl167.miran.ru (91.142.95.113) [AS41722]  536.503 ms  536.476 ms  536.442 ms
+         4  vl94.miran.ru (91.142.95.48) [AS41722]  11.008 ms  10.985 ms  10.954 ms
+         5  spb.piter-ix.google.com (185.1.152.26) [*]  536.291 ms  536.253 ms  536.216 ms
+         6  74.125.244.133 (74.125.244.133) [AS15169]  536.187 ms 74.125.244.181 (74.125.244.181) [AS15169]  2.778 ms 74.125.244.133 (74.125.244.133) [AS15169]  0.884 ms
+         7  142.251.51.187 (142.251.51.187) [AS15169]  4.664 ms  4.393 ms 72.14.232.84 (72.14.232.84) [AS15169]  1.294 ms
+         8  216.239.48.163 (216.239.48.163) [AS15169]  13.996 ms 142.251.61.219 (142.251.61.219) [AS15169]  4.723 ms 216.239.48.163 (216.239.48.163) [AS15169]  13.938 ms
+         9  216.239.63.27 (216.239.63.27) [AS15169]  5.185 ms * 216.239.42.21 (216.239.42.21) [AS15169]  6.156 ms
+         10  * * *
+         11  * * *
+         12  * * *
+         13  * * *
+         14  * * *
+         15  * * *
+         16  * * *
+         17  * * *
+         18  dns.google (8.8.8.8) [AS15169]  4.417 ms * *
+         Запрс проходит через локальную сеть (хоп 1), сеть провайдера (хоп 2-4 AS41722), пункт обмена (хоп 5), сеть google (хопы 6-18 AS15169).
+		 
+6. Повторите задание 5 в утилите mtr. На каком участке наибольшая задержка - delay? 
+         
+         mtr --report 8.8.8.8
+         Start: 2021-11-21T21:33:23+0300
+         HOST: student-virtual-machine     Loss%   Snt   Last   Avg  Best  Wrst StDev
+           1.|-- pfSense.localdomain        0.0%    10    0.3   0.4   0.3   0.4   0.1
+           2.|-- gw.miran.ru                0.0%    10    1.0   0.8   0.7   1.0   0.1
+           3.|-- vl167.miran.ru             0.0%    10    1.2   1.5   1.1   2.6   0.4
+           4.|-- vl94.miran.ru              0.0%    10    0.9   1.1   0.6   3.5   0.9
+           5.|-- spb.piter-ix.google.com    0.0%    10    1.1   1.1   0.9   1.4   0.1
+           6.|-- 74.125.244.133             0.0%    10    1.2   1.2   1.0   1.6   0.2
+           7.|-- 142.251.51.187             0.0%    10    4.8   5.5   4.6  12.2   2.4
+           8.|-- 142.250.56.13              0.0%    10    4.5   4.6   4.4   4.8   0.1
+           9.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          10.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          11.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          12.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          13.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          14.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          15.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          16.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          17.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
+          18.|-- dns.google                 0.0%    10    4.5   4.6   4.3   4.8   0.2
+         Судя по данномы выводу, наибольшая задержка на 7ом участке 142.251.51.187 Avg 5.5
+		 
+7. Какие DNS сервера отвечают за доменное имя dns.google? Какие A записи? воспользуйтесь утилитой dig
+         
+         dig dns.google
 
+         ; <<>> DiG 9.16.8-Ubuntu <<>> dns.google
+         ;; global options: +cmd
+         ;; Got answer:
+         ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 20767
+         ;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+         ;; OPT PSEUDOSECTION:
+         ; EDNS: version: 0, flags:; udp: 65494
+         ;; QUESTION SECTION:
+         ;dns.google.			IN	A
+
+         ;; ANSWER SECTION:
+         dns.google.		900	IN	A	8.8.8.8
+         dns.google.		900	IN	A	8.8.4.4
+
+         ;; Query time: 611 msec
+         ;; SERVER: 127.0.0.53#53(127.0.0.53)
+         ;; WHEN: Пн ноя 22 14:43:39 MSK 2021
+         ;; MSG SIZE  rcvd: 71
+         За доменное имя dns.google отвечают сервера 8.8.8.8 и 8.8.4.4
+		 
+9. Проверьте PTR записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой dig
+         
+         dig -x 8.8.8.8 +noall +answer
+         8.8.8.8.in-addr.arpa.	6993	IN	PTR	dns.google.
+         Для ip 8.8.8.8 ptr запись 8.8.8.8.in-addr.arpa., домен dns.google.
+		
+         dig -x 8.8.4.4 +noall +answer
+         4.4.8.8.in-addr.arpa.	86400	IN	PTR	dns.google.
+         Для ip 8.8.4.4 ptr запись 4.4.8.8.in-addr.arpa., домен dns.google.
+		 
