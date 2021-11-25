@@ -1,155 +1,277 @@
-3.6. Компьютерные сети, лекция 1
-	
-1. Работа c HTTP через телнет.
+3.7. Компьютерные сети, лекция 2
+
+1. Проверьте список доступных сетевых интерфейсов на вашем компьютере. Какие команды есть для этого в Linux и в Windows?
          
-         telnet stackoverflow.com 80
+		 Для Linux можно использовать команды (для некоторых возможно потребуется устновка net-tools):
+      	 ip addr
+         ifconfig -a
+         netstat -a		 
+		 Пример:
+		 ifconfig -a
+         ens160: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+                 inet 10.0.2.5  netmask 255.255.255.0  broadcast 10.0.2.255
+                 inet6 fe80::c2c5:3e30:e0d9:6b7a  prefixlen 64  scopeid 0x20<link>
+                 ether 00:0c:29:1e:96:54  txqueuelen 1000  (Ethernet)
+                 RX packets 3866  bytes 546790 (546.7 KB)
+                 RX errors 0  dropped 12  overruns 0  frame 0
+                 TX packets 6847  bytes 719262 (719.2 KB)
+                 TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
-         Host 'stackoverflow.com' resolved to 151.101.129.69.
-         Connecting to 151.101.129.69:80...
-         Connection established.
-         To escape to local shell, press 'Ctrl+Alt+]'.
-         GET /questions HTTP/1.0
-         HOST: stackoverflow.com
+         lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+                 inet 127.0.0.1  netmask 255.0.0.0
+                 inet6 ::1  prefixlen 128  scopeid 0x10<host>
+                 loop  txqueuelen 1000  (Local Loopback)
+                 RX packets 389  bytes 33164 (33.1 KB)
+                 RX errors 0  dropped 0  overruns 0  frame 0
+                 TX packets 389  bytes 33164 (33.1 KB)
+                 TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+         Для Windows можно использовать 
+		 ipconfig
+		 netsh interface show interface
+		 Пример:
+		 C:\Users\Admin>netsh interface show interface
 
-         HTTP/1.1 301 Moved Permanently
-         cache-control: no-cache, no-store, must-revalidate
-         location: https://stackoverflow.com/questions
-         x-request-guid: d0f4d99e-cd73-43f9-ac51-695bf5bb7ef8
-         feature-policy: microphone 'none'; speaker 'none'
-         content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
-         Accept-Ranges: bytes
-         Date: Sun, 21 Nov 2021 17:19:29 GMT
-         Via: 1.1 varnish
-         Connection: close
-         X-Served-By: cache-ams21044-AMS
-         X-Cache: MISS
-         X-Cache-Hits: 0
-         X-Timer: S1637515170.634768,VS0,VE75
-         Vary: Fastly-SSL
-         X-DNS-Prefetch-Control: off
-         Set-Cookie: prov=46437e93-7f5e-aaa8-168c-c9ee1ddc1e16; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
+         Состояние адм.  Состояние     Тип              Имя интерфейса
+         ---------------------------------------------------------------------
+         Разрешен       Подключен      Выделенный       VirtualBox Host-Only Network
+         Разрешен       Отключен       Выделенный       Подключение по локальной сети
+         Разрешен       Подключен      Выделенный       Ethernet
+         Разрешен       Отключен       Выделенный       OpenVPN Wintun
+         Разрешен       Подключен      Выделенный       OpenVPN TAP-Windows6
 
-         Connection closing...Socket close.
+2. Какой протокол используется для распознавания соседа по сетевому интерфейсу? Какой пакет и команды есть в Linux для этого? 
 
-         Connection closed by foreign host.
-
-         Disconnected from remote host(stackoverflow.com:80) at 20:19:30
-
-         Данный ответ означает, что адрес на короый я обращаюсь - перемещен навсегда. Это связано с тем, что stackoverflow.com отвечвет только на https запросы
-         и с помощью использованных команд telent мы не можем к нему подключиться.
+         Link Layer Discovery Protocol (LLDP) — протокол канального уровня, который позволяет сетевым устройствам анонсировать в сеть информацию о себе и о своих возможностях, 
+		 а также собирать эту информацию о соседних устройствах. 
+		 *Специально добавил второй интерфейс для наглядности.
+		 sudo apt install lldpd
+		 sudo systemctl enable lldpd && systemctl start lldpd
+		 lldpctl
+		 -------------------------------------------------------------------------------
+         LLDP neighbors:
+         -------------------------------------------------------------------------------
+         Interface:    ens160, via: LLDP, RID: 1, Time: 0 day, 00:06:36
+           Chassis:     
+             ChassisID:    mac 00:0c:29:1e:96:54
+             SysName:      student-virtual-machine
+             SysDescr:     Ubuntu 21.04 Linux 5.11.0-40-generic #44-Ubuntu SMP Wed Oct 20 16:16:42 UTC 2021 x86_64
+             MgmtIP:       10.0.2.5
+             MgmtIface:    2
+             MgmtIP:       fe80::c2c5:3e30:e0d9:6b7a
+             MgmtIface:    2
+             Capability:   Bridge, off
+             Capability:   Router, off
+             Capability:   Wlan, off
+             Capability:   Station, on
+           Port:        
+             PortID:       mac 00:0c:29:1e:96:5e
+             PortDescr:    ens192
+             TTL:          120
+             PMD autoneg:  supported: no, enabled: no
+               MAU oper type: 10GigBaseCX4 - X copper over 8 pair 100-Ohm balanced cable
+         -------------------------------------------------------------------------------
+         Interface:    ens192, via: LLDP, RID: 1, Time: 0 day, 00:06:36
+           Chassis:     
+             ChassisID:    mac 00:0c:29:1e:96:54
+             SysName:      student-virtual-machine
+             SysDescr:     Ubuntu 21.04 Linux 5.11.0-40-generic #44-Ubuntu SMP Wed Oct 20 16:16:42 UTC 2021 x86_64
+             MgmtIP:       10.0.2.5
+             MgmtIface:    2
+             MgmtIP:       fe80::c2c5:3e30:e0d9:6b7a
+             MgmtIface:    2
+             Capability:   Bridge, off
+             Capability:   Router, off
+             Capability:   Wlan, off
+             Capability:   Station, on
+           Port:        
+             PortID:       mac 00:0c:29:1e:96:54
+             PortDescr:    ens160
+             TTL:          120
+             PMD autoneg:  supported: no, enabled: no
+               MAU oper type: 10GigBaseCX4 - X copper over 8 pair 100-Ohm balanced cable
+         -------------------------------------------------------------------------------
 		 
-2. Повторите задание 1 в браузере, используя консоль разработчика F12.        	
+3. Какая технология используется для разделения L2 коммутатора на несколько виртуальных сетей? Какой пакет и команды есть в Linux для этого? Приведите пример конфига.
+
+         Для разделения L2 коммутатора на несколько виртуальных сетей используется VLAN (Virtual Local Area Network)
+         sudo apt install vlan
+		 sudo vconfig add ens192 222
+		 sudo ifconfig ens192.222 10.0.2.20 netmask 255.255.255.0 up
+		 ifconfig -a
+		 ens160: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+                 inet 10.0.2.5  netmask 255.255.255.0  broadcast 10.0.2.255
+                 inet6 fe80::c2c5:3e30:e0d9:6b7a  prefixlen 64  scopeid 0x20<link>
+                 ether 00:0c:29:1e:96:54  txqueuelen 1000  (Ethernet)
+                 RX packets 912  bytes 102718 (102.7 KB)
+                 RX errors 0  dropped 0  overruns 0  frame 0
+                 TX packets 854  bytes 110620 (110.6 KB)
+                 TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+         ens192: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+                 inet 10.0.2.9  netmask 255.255.255.0  broadcast 10.0.2.255
+                 inet6 fe80::8b56:a42a:1f8f:4b50  prefixlen 64  scopeid 0x20<link>
+                 ether 00:0c:29:1e:96:5e  txqueuelen 1000  (Ethernet)
+                 RX packets 417  bytes 57710 (57.7 KB)
+                 RX errors 0  dropped 0  overruns 0  frame 0
+                 TX packets 226  bytes 34173 (34.1 KB)
+                 TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+         ens192.222: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+                 inet 10.0.2.20  netmask 255.255.255.0  broadcast 10.0.2.255
+                 inet6 fe80::20c:29ff:fe1e:965e  prefixlen 64  scopeid 0x20<link>
+                 ether 00:0c:29:1e:96:5e  txqueuelen 1000  (Ethernet)
+                 RX packets 0  bytes 0 (0.0 B)
+                 RX errors 0  dropped 0  overruns 0  frame 0
+                 TX packets 70  bytes 9920 (9.9 KB)
+                 TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+         lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+                 inet 127.0.0.1  netmask 255.0.0.0
+                 inet6 ::1  prefixlen 128  scopeid 0x10<host>
+                 loop  txqueuelen 1000  (Local Loopback)
+                 RX packets 338  bytes 31785 (31.7 KB)
+                 RX errors 0  dropped 0  overruns 0  frame 0
+                 TX packets 338  bytes 31785 (31.7 KB)
+                 TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+				 
+		 В случае если мы хотим сохранить наши настройки на постоянной основе необходимо отконфигурировать netplan
+		 # Let NetworkManager manage all devices on this system
+         network:
+           version: 2
+           renderer: NetworkManager
+           ethernets:
+                 ens160:
+                     addresses:
+                         - 10.0.2.5/24
+                     gateway4: 10.0.2.2
+                     nameservers:
+                     addresses: [10.0.2.2]
+                 ens192:
+                     addresses:
+                         - 10.0.2.9/24
+                     gateway4: 10.0.2.2
+                     nameservers:
+                     addresses: [10.0.2.2]
+           vlans:
+                 vlan222:
+                     id: 222
+                     link: ens192
+                     addresses: [10.0.2.20/24]
+
+4. Какие типы агрегации интерфейсов есть в Linux? Какие опции есть для балансировки нагрузки? Приведите пример конфига.
+
+         Я нашел информацию о двух типах агрегации интерфесов:
+		 Network Bonding и Network Teaming. Второй, по сути является более современной модификацие первого.
+		 Teaming - новый механизм создания агрегированных линков в Linux, более архитектурно правильный. 
+		 Состоит из ядерной части, которая реализует базовые механизмы обработки трафика, и части пространства пользователя, которая отвечает за сигнализацию и управление ядерной частью.
+         Опции балансировки нагрузки:
+		 Mode-0(balance-rr) - По умолчанию. В данном режиме сетевые пакеты отправляются “по кругу”, от первого интерфейса к последнему. 
+		 Если выходят из строя интерфейсы, пакеты отправляются на остальные оставшиеся.
+		 Mode-1(active-backup) – Один из интерфейсов работает в активном режиме, остальные в ожидающем. 
+		 При обнаружении проблемы на активном интерфейсе производится переключение на ожидающий интерфейс.
+		 Mode-2(balance-xor) – Передача пакетов распределяется по типу входящего и исходящего трафика по формуле [( «MAC адрес источника» XOR «MAC адрес назначения») по модулю «число интерфейсов»]. 
+		 Режим дает балансировку нагрузки и отказоустойчивость.
+		 Mode-3(broadcast) – Происходит передача во все объединенные интерфейсы, тем самым обеспечивая отказоустойчивость.
+		 Mode-4(802.3ad) – динамическое объединение одинаковых портов. 
+		 В данном режиме можно значительно увеличить пропускную способность входящего так и исходящего трафика.
+		 Mode-5(balance-tlb) – Адаптивная балансировки нагрузки трафика. 
+		 Входящий трафик получается только активным интерфейсом, исходящий распределяется в зависимости от текущей загрузки канала каждого интерфейса.
+		 Mode-6(balance-alb) – Адаптивная балансировка нагрузки. Обеспечивается балансировку нагрузки как исходящего так и входящего трафика.
+		 
+		 По документации есть еще один важный параметр. xmit_hash_policy - Определяет хэш политику передачи пакетов через объединенные интерфейсы в режиме balance-xor или 802.3ad.
+		 Считаю важным упомянуть.
+		 
+		 Настроку проводил на Ubuntu 20.04.2 LTS
+		 конфигурация до манипуляций
+		 student@study-srv:~$ ip addr
+         1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+             link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+             inet 127.0.0.1/8 scope host lo
+                valid_lft forever preferred_lft forever
+             inet6 ::1/128 scope host 
+                valid_lft forever preferred_lft forever
+         2: enp1s0f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+             link/ether 00:25:90:08:cf:50 brd ff:ff:ff:ff:ff:ff
+             inet 192.168.87.23/24 brd 192.168.87.255 scope global dynamic enp1s0f0
+                valid_lft 497sec preferred_lft 497sec
+             inet6 fe80::225:90ff:fe08:cf50/64 scope link 
+                valid_lft forever preferred_lft forever
+         3: enp1s0f1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+             link/ether 00:25:90:08:cf:51 brd ff:ff:ff:ff:ff:ff
+             inet 192.168.87.26/24 brd 192.168.87.255 scope global dynamic enp1s0f1
+                valid_lft 497sec preferred_lft 497sec
+             inet6 fe80::225:90ff:fe08:cf51/64 scope link 
+                valid_lft forever preferred_lft forever
+				
+             sudo nano /etc/netplan/00-installer-config.yaml (конфигурация агрегации)
+			 # This is the network config written by 'subiquity'
+         network:
+           ethernets:
+             enp1s0f0:
+               dhcp4: false
+             enp1s0f1:
+               dhcp4: false
+         version: 2
+           bonds:
+             bond0:
+               interfaces:
+                 - enp1s0f0
+                 - enp1s0f1
+               addresses: [192.168.87.50/24]
+               gateway4: 192.168.87.1
+               nameservers:
+                 addresses: [8.8.8.8,8.8.4.4]
+               parameters:
+                 mode: active-backup
+                 mii-monitor-interval: 100
+                 primary: enp1s0f0
+				 
+         Конфигруация после настройки
+         sudo netplan apply
+         ip addr
+         1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+             link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+             inet 127.0.0.1/8 scope host lo
+                valid_lft forever preferred_lft forever
+             inet6 ::1/128 scope host 
+                valid_lft forever preferred_lft forever
+         2: enp1s0f0: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc mq master bond0 state UP group default qlen 1000
+             link/ether a6:42:b6:48:76:bf brd ff:ff:ff:ff:ff:ff
+         3: enp1s0f1: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc mq master bond0 state UP group default qlen 1000
+             link/ether a6:42:b6:48:76:bf brd ff:ff:ff:ff:ff:ff
+         4: bond0: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+             link/ether a6:42:b6:48:76:bf brd ff:ff:ff:ff:ff:ff
+             inet 192.168.87.50/24 brd 192.168.87.255 scope global bond0
+                valid_lft forever preferred_lft forever
+             inet6 fe80::a442:b6ff:fe48:76bf/64 scope link 
+                valid_lft forever preferred_lft forever
+		 По рещультатам тестирования - все работает. Пинги идут в обе стороны и при работе обоих линков и при отключении primary.
+		 С вашего позволения, логи пингов приводить не буду - и так работа получается слишком объемной =)
+		 
+5. Сколько IP адресов в сети с маской /29 ? Сколько /29 подсетей можно получить из сети с маской /24. Приведите несколько примеров /29 подсетей внутри сети 10.10.10.0/24.		 
+		 
+		 В сети с маской /29 количество адресов 6 + 2 адреса (network и broadcast)
+		 Из сети с маской /24 можно получить 32 /29 подсети
+		 Примеры подсетй:
+		 10.10.10.0/29
+		 10.10.10.8/29
+		 10.10.10.16/29
+         ~~~~~~~~~~~~~~
+         10.10.10.240/29
+         10.10.10.248/29
+
+6. Задача: вас попросили организовать стык между 2-мя организациями. Диапазоны 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 уже заняты. 
+   Из какой подсети допустимо взять частные IP адреса? Маску выберите из расчета максимум 40-50 хостов внутри подсети.
+   
+         Как вариант, можно использовать сеть из диапазона CG-NAT  100.64.0.0/26
+		 
+7. Как проверить ARP таблицу в Linux, Windows? Как очистить ARP кеш полностью? Как из ARP таблицы удалить только один нужный IP?
          
-         Браузер: Firefox Browser 94.0 (64-bit)
-         Код ответа:
+		 Для Linux и Windows существует утилита arp. Команда arp -a (Win), arp -n (Linux) отобразит таблицу.  
+		 arp -d hostname/ip удалит все записи для hostname/ip (win и Linux). 
+		 Для Win очистить arp кэш можно командой netsh interface ip delete arpcache 
+		 Для Linux чистить arp кэш можно командой sudo ip -s -s neigh flush all
 		 
-         GET	
-         scheme: http
-         Host: stackoverflow.com
-         filename: /
-         Address: 151.101.193.69:80
-         Status 301 Moved Permanently
-         Version  HTTP/1.1
-         Transferred 53.12 KB (175.88 KB size)
-		 
-         Долше всего обрабатывался запрос:
-         POST
-         scheme: https
-         host: stats.g.doubleclick.net
-         filename: /j/collect
-		 
-ScreenShot: https://ibb.co/JxK3yxx
-		 
-3. Какой IP адрес у вас в интернете? 
-         
-         178.249.69.182
-		 
-4. Какому провайдеру принадлежит ваш IP адрес? Какой автономной системе AS? Воспользуйтесь утилитой whois
- 
-         netname:        Miran-Net
-         origin:         AS41722`
 
-5. Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS? Воспользуйтесь утилитой traceroute
-         
-         traceroute -A 8.8.8.8
-         traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
-         1  pfSense.localdomain (10.0.2.2) [*]  0.715 ms  0.658 ms  0.614 ms
-         2  gw.miran.ru (178.249.69.1) [AS41722]  536.591 ms  536.562 ms  536.534 ms
-         3  vl167.miran.ru (91.142.95.113) [AS41722]  536.503 ms  536.476 ms  536.442 ms
-         4  vl94.miran.ru (91.142.95.48) [AS41722]  11.008 ms  10.985 ms  10.954 ms
-         5  spb.piter-ix.google.com (185.1.152.26) [*]  536.291 ms  536.253 ms  536.216 ms
-         6  74.125.244.133 (74.125.244.133) [AS15169]  536.187 ms 74.125.244.181 (74.125.244.181) [AS15169]  2.778 ms 74.125.244.133 (74.125.244.133) [AS15169]  0.884 ms
-         7  142.251.51.187 (142.251.51.187) [AS15169]  4.664 ms  4.393 ms 72.14.232.84 (72.14.232.84) [AS15169]  1.294 ms
-         8  216.239.48.163 (216.239.48.163) [AS15169]  13.996 ms 142.251.61.219 (142.251.61.219) [AS15169]  4.723 ms 216.239.48.163 (216.239.48.163) [AS15169]  13.938 ms
-         9  216.239.63.27 (216.239.63.27) [AS15169]  5.185 ms * 216.239.42.21 (216.239.42.21) [AS15169]  6.156 ms
-         10  * * *
-         11  * * *
-         12  * * *
-         13  * * *
-         14  * * *
-         15  * * *
-         16  * * *
-         17  * * *
-         18  dns.google (8.8.8.8) [AS15169]  4.417 ms * *
-         Запрс проходит через локальную сеть (хоп 1), сеть провайдера (хоп 2-4 AS41722), пункт обмена (хоп 5), сеть google (хопы 6-18 AS15169).
 		 
-6. Повторите задание 5 в утилите mtr. На каком участке наибольшая задержка - delay? 
-         
-         mtr --report 8.8.8.8
-         Start: 2021-11-21T21:33:23+0300
-         HOST: student-virtual-machine     Loss%   Snt   Last   Avg  Best  Wrst StDev
-           1.|-- pfSense.localdomain        0.0%    10    0.3   0.4   0.3   0.4   0.1
-           2.|-- gw.miran.ru                0.0%    10    1.0   0.8   0.7   1.0   0.1
-           3.|-- vl167.miran.ru             0.0%    10    1.2   1.5   1.1   2.6   0.4
-           4.|-- vl94.miran.ru              0.0%    10    0.9   1.1   0.6   3.5   0.9
-           5.|-- spb.piter-ix.google.com    0.0%    10    1.1   1.1   0.9   1.4   0.1
-           6.|-- 74.125.244.133             0.0%    10    1.2   1.2   1.0   1.6   0.2
-           7.|-- 142.251.51.187             0.0%    10    4.8   5.5   4.6  12.2   2.4
-           8.|-- 142.250.56.13              0.0%    10    4.5   4.6   4.4   4.8   0.1
-           9.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          10.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          11.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          12.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          13.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          14.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          15.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          16.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          17.|-- ???                       100.0    10    0.0   0.0   0.0   0.0   0.0
-          18.|-- dns.google                 0.0%    10    4.5   4.6   4.3   4.8   0.2
-         Судя по данномы выводу, наибольшая задержка на 7ом участке 142.251.51.187 Avg 5.5
-		 
-7. Какие DNS сервера отвечают за доменное имя dns.google? Какие A записи? воспользуйтесь утилитой dig
-         
-         dig dns.google
-
-         ; <<>> DiG 9.16.8-Ubuntu <<>> dns.google
-         ;; global options: +cmd
-         ;; Got answer:
-         ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 20767
-         ;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
-
-         ;; OPT PSEUDOSECTION:
-         ; EDNS: version: 0, flags:; udp: 65494
-         ;; QUESTION SECTION:
-         ;dns.google.			IN	A
-
-         ;; ANSWER SECTION:
-         dns.google.		900	IN	A	8.8.8.8
-         dns.google.		900	IN	A	8.8.4.4
-
-         ;; Query time: 611 msec
-         ;; SERVER: 127.0.0.53#53(127.0.0.53)
-         ;; WHEN: Пн ноя 22 14:43:39 MSK 2021
-         ;; MSG SIZE  rcvd: 71
-         За доменное имя dns.google отвечают сервера 8.8.8.8 и 8.8.4.4
-		 
-9. Проверьте PTR записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой dig
-         
-         dig -x 8.8.8.8 +noall +answer
-         8.8.8.8.in-addr.arpa.	6993	IN	PTR	dns.google.
-         Для ip 8.8.8.8 ptr запись 8.8.8.8.in-addr.arpa., домен dns.google.
-		
-         dig -x 8.8.4.4 +noall +answer
-         4.4.8.8.in-addr.arpa.	86400	IN	PTR	dns.google.
-         Для ip 8.8.4.4 ptr запись 4.4.8.8.in-addr.arpa., домен dns.google.
 		 
