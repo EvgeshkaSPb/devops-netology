@@ -1,297 +1,291 @@
-3.8. Компьютерные сети, лекция 3
+3.9. Элементы безопасности информационных систем
+   
+1. Установите Bitwarden плагин для браузера. Зарегестрируйтесь и сохраните несколько паролей.
+     
+	     Зарегестрировался и установил
+		 https://ibb.co/939DrZ8
+		 
+2. Установите Google authenticator на мобильный телефон. Настройте вход в Bitwarden акаунт через Google authenticator OTP.
 
-1. Подключитесь к публичному маршрутизатору в интернет. Найдите маршрут к вашему публичному IP
+         Включил настройки Bitwarden
+		 https://ibb.co/89Z6hLQ
+		 При логине появилось требование 2го фактора
+		 https://ibb.co/WWFL8N8
+		 
+3. Установите apache2, сгенерируйте самоподписанный сертификат, настройте тестовый сайт для работы по HTTPS.
 
-         route-views>show ip route 178.249.69.182     
-         Routing entry for 178.249.69.0/24
-           Known via "bgp 6447", distance 20, metric 0
-           Tag 6939, type external
-           Last update from 64.71.137.241 17:44:58 ago
-           Routing Descriptor Blocks:
-           * 64.71.137.241, from 64.71.137.241, 17:44:58 ago
-               Route metric is 0, traffic share count is 1
-               AS Hops 3
-               Route tag 6939
-               MPLS label: none
-         route-views>show bgp  178.249.69.182         
-         BGP routing table entry for 178.249.69.0/24, version 1391350315
-         Paths: (22 available, best #22, table default)
-           Not advertised to any peer
-           Refresh Epoch 1
-           4901 6079 9002 41722, (aggregated by 41722 91.142.95.230)
-             162.250.137.254 from 162.250.137.254 (162.250.137.254)
-               Origin IGP, localpref 100, valid, external
-               Community: 65000:10100 65000:10300 65000:10400
-               path 7FE0266B68E0 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 3
-           3303 9002 41722, (aggregated by 41722 91.142.95.230)
-             217.192.89.50 from 217.192.89.50 (138.187.128.158)
-               Origin IGP, localpref 100, valid, external
-               Community: 3303:1004 3303:1007 3303:1030 3303:3067 9002:64667
-               path 7FE0DA4AAAD0 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           3267 29076 41722, (aggregated by 41722 91.142.95.233)
-             194.85.40.15 from 194.85.40.15 (185.141.126.1)
-               Origin IGP, metric 0, localpref 100, valid, external
-               path 7FE0D882EFF0 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           57866 9002 41722, (aggregated by 41722 91.142.95.230)
-             37.139.139.17 from 37.139.139.17 (37.139.139.17)
-               Origin IGP, metric 0, localpref 100, valid, external
-               Community: 9002:0 9002:64667
-               path 7FE1171F1B08 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           7018 1299 41722, (aggregated by 41722 91.142.95.233)
-             12.0.1.63 from 12.0.1.63 (12.0.1.63)
-               Origin IGP, localpref 100, valid, external
-               Community: 7018:5000 7018:37232
-               path 7FE08F3E7820 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           3333 31133 41722, (aggregated by 41722 91.142.95.233)
-             193.0.0.56 from 193.0.0.56 (193.0.0.56)
-               Origin IGP, localpref 100, valid, external
-               path 7FE0EB3F6DA8 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           49788 6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             91.218.184.60 from 91.218.184.60 (91.218.184.60)
-               Origin IGP, metric 0, localpref 100, valid, external
-               Community: 49788:1000
-               path 7FE0E9D16358 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           20912 6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             212.66.96.126 from 212.66.96.126 (212.66.96.126)
-               Origin IGP, localpref 100, valid, external
-               Community: 20912:65016
-               path 7FE17B13F4E8 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           8283 6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             94.142.247.3 from 94.142.247.3 (94.142.247.3)
-               Origin IGP, metric 0, localpref 100, valid, external
-               Community: 0:714 0:2906 0:6939 0:12876 0:12989 0:13335 0:15133 0:15169 0:16265 0:16276 0:16509 0:20940 0:22822 0:32590 0:48641 0:49029 0:57363 8283:1 8283:101 8283:103
-               unknown transitive attribute: flag 0xE0 type 0x20 length 0x24
-                 value 0000 205B 0000 0000 0000 0001 0000 205B
-                       0000 0005 0000 0001 0000 205B 0000 0005
-                       0000 0003 
-               path 7FE11CD181E8 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           3356 3216 41722, (aggregated by 41722 91.142.95.233)
-             4.68.4.46 from 4.68.4.46 (4.69.184.201)
-               Origin IGP, metric 0, localpref 100, valid, external
-               Community: 3216:2001 3216:4478 3356:2 3356:22 3356:100 3356:123 3356:503 3356:901 3356:2067
-               path 7FE0CD5C07F0 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           1221 4637 9002 41722, (aggregated by 41722 91.142.95.230)
-             203.62.252.83 from 203.62.252.83 (203.62.252.83)
-               Origin IGP, localpref 100, valid, external
-               path 7FE15930DCB8 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           852 31133 41722, (aggregated by 41722 91.142.95.233)
-             154.11.12.212 from 154.11.12.212 (96.1.209.43)
-               Origin IGP, metric 0, localpref 100, valid, external
-               path 7FE18BD38CA8 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           2497 3216 41722, (aggregated by 41722 91.142.95.233)
-             202.232.0.2 from 202.232.0.2 (58.138.96.254)
-               Origin IGP, localpref 100, valid, external
-               path 7FE0E8640008 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           20130 6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             140.192.8.16 from 140.192.8.16 (140.192.8.16)
-               Origin IGP, localpref 100, valid, external
-               path 7FE1555C4790 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           701 1273 3216 41722, (aggregated by 41722 91.142.95.233)
-             137.39.3.55 from 137.39.3.55 (137.39.3.55)
-               Origin IGP, localpref 100, valid, external
-               path 7FE01EEE4C98 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           3257 1299 41722, (aggregated by 41722 91.142.95.233)
-             89.149.178.10 from 89.149.178.10 (213.200.83.26)
-               Origin IGP, metric 10, localpref 100, valid, external
-               Community: 3257:8794 3257:30052 3257:50001 3257:54900 3257:54901
-               path 7FE154B2C968 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           3549 3356 3216 41722, (aggregated by 41722 91.142.95.233)
-             208.51.134.254 from 208.51.134.254 (67.16.168.191)
-               Origin IGP, metric 0, localpref 100, valid, external
-               Community: 3216:2001 3216:4478 3356:2 3356:22 3356:100 3356:123 3356:503 3356:901 3356:2067 3549:2581 3549:30840
-               path 7FE15E6CFCC8 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           53767 6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             162.251.163.2 from 162.251.163.2 (162.251.162.3)
-               Origin IGP, localpref 100, valid, external
-               Community: 53767:2000
-               path 7FE13F0FD678 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           101 6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             209.124.176.223 from 209.124.176.223 (209.124.176.223)
-               Origin IGP, localpref 100, valid, external
-               Community: 101:20300 101:22100
-               path 7FE0CF3E06C0 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           3561 3910 3356 3216 41722, (aggregated by 41722 91.142.95.233)
-             206.24.210.80 from 206.24.210.80 (206.24.210.80)
-               Origin IGP, localpref 100, valid, external
-               path 7FE0E8F4D2F8 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           1351 6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             132.198.255.253 from 132.198.255.253 (132.198.255.253)
-               Origin IGP, localpref 100, valid, external
-               path 7FE18E951468 RPKI State valid
-               rx pathid: 0, tx pathid: 0
-           Refresh Epoch 1
-           6939 50509 41722, (aggregated by 41722 91.142.95.230)
-             64.71.137.241 from 64.71.137.241 (216.218.252.164)
-               Origin IGP, localpref 100, valid, external, best
-               path 7FE07E481798 RPKI State valid
-               rx pathid: 0, tx pathid: 0x0
-			   
-2. Создайте dummy0 интерфейс в Ubuntu. Добавьте несколько статических маршрутов. Проверьте таблицу маршрутизации.
+         # Устанавливаем apache2
+         student@student-virtual-machine:/etc/apache2/sites-available$ sudo systemctl status apache2
+         ● apache2.service - The Apache HTTP Server
+              Loaded: loaded (/lib/systemd/system/apache2.service; enabled; vendor preset: enabled)
+              Active: active (running) since Tue 2021-12-07 15:13:03 MSK; 27min ago
+                Docs: https://httpd.apache.org/docs/2.4/
+             Process: 14090 ExecReload=/usr/sbin/apachectl graceful (code=exited, status=0/SUCCESS)
+            Main PID: 13373 (apache2)
+               Tasks: 55 (limit: 2292)
+              Memory: 5.4M
+              CGroup: /system.slice/apache2.service
+                      ├─13373 /usr/sbin/apache2 -k start
+                      ├─14094 /usr/sbin/apache2 -k start
+                      └─14095 /usr/sbin/apache2 -k start
+		 
+		 # Генерируем сертификат
+		 student@student-virtual-machine:~$ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+         Generating a RSA private key
+         ....+++++
+         .......................................................................................+++++
+         writing new private key to '/etc/ssl/private/apache-selfsigned.key'
+         -----
+         You are about to be asked to enter information that will be incorporated
+         into your certificate request.
+         What you are about to enter is what is called a Distinguished Name or a DN.
+         There are quite a few fields but you can leave some blank
+         For some fields there will be a default value,
+         If you enter '.', the field will be left blank.
+         -----
+         Country Name (2 letter code) [AU]:RU
+         State or Province Name (full name) [Some-State]:SPb
+         Locality Name (eg, city) []:SPb
+         Organization Name (eg, company) [Internet Widgits Pty Ltd]:Student
+         Organizational Unit Name (eg, section) []:Student
+         Common Name (e.g. server FQDN or YOUR name) []:10.0.2.12
+         Email Address []:evgenplay@inbox.ru
+		 
+		 # Настраиваем Apache на работы по https
+         student@student-virtual-machine:~$ sudo nano /etc/apache2/conf-available/ssl-params.conf
+         SSLCipherSuite EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH
+         SSLProtocol All -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
+         SSLHonorCipherOrder On
          
-		 #Создаем dummy0 интерфейс 
-		 student@student-virtual-machine:~$ sudo ip link add name dummy0 type dummy
-         [sudo] password for student: 
-         student@student-virtual-machine:~$ sudo ip link set dummy0 up
-         student@student-virtual-machine:~$ sudo ip address add 192.0.2.10/32 dev dummy0
-		 # Проверяем интерфейсы и таблицу маршрутизации
-         student@student-virtual-machine:~$ ip addr
-         1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
-             link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-             inet 127.0.0.1/8 scope host lo
-                valid_lft forever preferred_lft forever
-             inet6 ::1/128 scope host 
-             valid_lft forever preferred_lft forever
-         2: ens160: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
-             link/ether 00:0c:29:1e:96:54 brd ff:ff:ff:ff:ff:ff
-             altname enp3s0
-             inet 10.0.2.12/24 brd 10.0.2.255 scope global dynamic ens160
-                valid_lft 6243sec preferred_lft 6243sec
-             inet6 fe80::20c:29ff:fe1e:9654/64 scope link 
-                valid_lft forever preferred_lft forever
-         3: dummy0: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN group default qlen 1000
-             link/ether 12:ad:ec:c3:45:3f brd ff:ff:ff:ff:ff:ff
-             inet 192.0.2.10/32 scope global dummy0
-                valid_lft forever preferred_lft forever
-             inet6 fe80::10ad:ecff:fec3:453f/64 scope link 
-                valid_lft forever preferred_lft forever
-         student@student-virtual-machine:~$ route
-         Kernel IP routing table
-         Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-         default         pfSense.localdo 0.0.0.0         UG    0      0        0 ens160
-         10.0.2.0        0.0.0.0         255.255.255.0   U     0      0        0 ens160
-         link-local      0.0.0.0         255.255.0.0     U     1000   0        0 ens160
-		 # Добавляем маршруты и проверяем таблицу маршрутизации
-         student@student-virtual-machine:~$ sudo ip route add 8.8.8.8 via 192.0.2.10
-		 student@student-virtual-machine:~$ sudo ip route add 87.250.250.242 via 192.0.2.10
-         student@student-virtual-machine:~$ sudo ip route add 94.100.180.200 via 192.0.2.10
-		 student@student-virtual-machine:~$ route
-         Kernel IP routing table
-         Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-         default         pfSense.localdo 0.0.0.0         UG    0      0        0 ens160
-         dns.google      192.0.2.10      255.255.255.255 UGH   0      0        0 dummy0
-         10.0.2.0        0.0.0.0         255.255.255.0   U     0      0        0 ens160
-         ya.ru           192.0.2.10      255.255.255.255 UGH   0      0        0 dummy0
-         mail.ru         192.0.2.10      255.255.255.255 UGH   0      0        0 dummy0
-         link-local      0.0.0.0         255.255.0.0     U     1000   0        0 ens160
-		 # Проверяем работу маршрута
-		 student@student-virtual-machine:~$ ping ya.ru
-         PING ya.ru (87.250.250.242) 56(84) bytes of data.
-         ^C
-         --- ya.ru ping statistics ---
-         8 packets transmitted, 0 received, 100% packet loss, time 7174ms
-		 # Удаляем маршруты и проверяем
-		 student@student-virtual-machine:~$ sudo ip route del 94.100.180.200 via 192.0.2.10
-         student@student-virtual-machine:~$ sudo ip route del 87.250.250.242 via 192.0.2.10
-         student@student-virtual-machine:~$ sudo ip route del 8.8.8.8 via 192.0.2.10
-         student@student-virtual-machine:~$ route
-         Kernel IP routing table
-         Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-         default         pfSense.localdo 0.0.0.0         UG    0      0        0 ens160
-         10.0.2.0        0.0.0.0         255.255.255.0   U     0      0        0 ens160
-         link-local      0.0.0.0         255.255.0.0     U     1000   0        0 ens160
-         student@student-virtual-machine:~$ ping ya.ru
-         PING ya.ru (87.250.250.242) 56(84) bytes of data.
-         64 bytes from ya.ru (87.250.250.242): icmp_seq=1 ttl=246 time=11.4 ms
-         64 bytes from ya.ru (87.250.250.242): icmp_seq=2 ttl=246 time=11.7 ms
-
-         --- ya.ru ping statistics ---
-         2 packets transmitted, 2 received, 0% packet loss, time 1002ms
-
-3. Проверьте открытые TCP порты в Ubuntu, какие протоколы и приложения используют эти порты? Приведите несколько примеров.
-
-         student@student-virtual-machine:~$ sudo netstat -plnut | grep tcp
-         tcp        0      0 0.0.0.0:139             0.0.0.0:*               LISTEN      1069/smbd           
-         tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      1/init              
-         tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      670/systemd-resolve 
-         tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1006/sshd: /usr/sbi 
-         tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      2680/cupsd          
-         tcp        0      0 127.0.0.1:6010          0.0.0.0:*               LISTEN      5114/sshd: student@ 
-         tcp        0      0 0.0.0.0:445             0.0.0.0:*               LISTEN      1069/smbd           
-         tcp6       0      0 :::139                  :::*                    LISTEN      1069/smbd           
-         tcp6       0      0 :::9100                 :::*                    LISTEN      1043/node_exporter  
-         tcp6       0      0 :::111                  :::*                    LISTEN      1/init              
-         tcp6       0      0 :::22                   :::*                    LISTEN      1006/sshd: /usr/sbi 
-         tcp6       0      0 ::1:3350                :::*                    LISTEN      1000/xrdp-sesman    
-         tcp6       0      0 ::1:631                 :::*                    LISTEN      2680/cupsd          
-         tcp6       0      0 ::1:6010                :::*                    LISTEN      5114/sshd: student@ 
-         tcp6       0      0 :::3389                 :::*                    LISTEN      1021/xr		 
-		 22 tcp порт - используется SSH протоколом для удаленного управления системой
-		 139 и 445 tcp порт - используются сервисом SMB для обмена файлами по локальной сети
-         3350 и 3389 tcp порты - используются для XRDP. Это реализация RDP для Linux.
+         Header always set X-Frame-Options DENY
+         Header always set X-Content-Type-Options nosniff
+         
+         SSLCompression off
+         SSLUseStapling on
+         SSLStaplingCache "shmcb:logs/stapling-cache(150000)"
+     
+         SSLSessionTickets Off
 		 
-4. Проверьте используемые UDP сокеты в Ubuntu, какие протоколы и приложения используют эти порты?
+		 student@student-virtual-machine:~$ sudo nano /etc/apache2/sites-available/default-ssl.conf
+		 <IfModule mod_ssl.c>
+         <VirtualHost _default_:443>
+                ServerAdmin webmaster@localhost
+                ServerName 10.0.2.12
+                DocumentRoot /var/www/html
 
-         student@student-virtual-machine:~$ sudo netstat -plnut | grep udp
-         [sudo] password for student: 
-         udp        0      0 127.0.0.53:53           0.0.0.0:*                           670/systemd-resolve 
-         udp        0      0 0.0.0.0:68              0.0.0.0:*                           728/dhclient        
-         udp        0      0 0.0.0.0:111             0.0.0.0:*                           1/init              
-         udp        0      0 192.0.2.10:137          0.0.0.0:*                           1042/nmbd           
-         udp        0      0 192.0.2.10:137          0.0.0.0:*                           1042/nmbd           
-         udp        0      0 10.0.2.255:137          0.0.0.0:*                           1042/nmbd           
-         udp        0      0 10.0.2.12:137           0.0.0.0:*                           1042/nmbd           
-         udp        0      0 0.0.0.0:137             0.0.0.0:*                           1042/nmbd           
-         udp        0      0 192.0.2.10:138          0.0.0.0:*                           1042/nmbd           
-         udp        0      0 192.0.2.10:138          0.0.0.0:*                           1042/nmbd           
-         udp        0      0 10.0.2.255:138          0.0.0.0:*                           1042/nmbd           
-         udp        0      0 10.0.2.12:138           0.0.0.0:*                           1042/nmbd           
-         udp        0      0 0.0.0.0:138             0.0.0.0:*                           1042/nmbd           
-         udp        0      0 0.0.0.0:5353            0.0.0.0:*                           794/avahi-daemon: r 
-         udp        0      0 0.0.0.0:60932           0.0.0.0:*                           794/avahi-daemon: r 
-         udp        0      0 0.0.0.0:631             0.0.0.0:*                           2683/cups-browsed   
-         udp6       0      0 :::45070                :::*                                794/avahi-daemon: r 
-         udp6       0      0 :::111                  :::*                                1/init              
-         udp6       0      0 :::5353                 :::*                                794/avahi-daemon: r 
-         68 udp - Порт DHCP клиента, по нему получены данные о DHCP сервере.
-		 137 и 138 udp - Порты nmbd который обеспечивает клиентам поддержку сервера имен NetBIOS. Необходим для работы служб SMB/CIFS
-		 111 udp - используется sunrpc, вообще используется всеми rpc сервисами NFS, NIS и.т.д.
-         5353 и 60932 udp - используются Avahi-Daemon, системой обнаружения сервисов в локальной сети (сетевые принтеры и прочее).
-		 631 udp - Используется Cups-browsed, служба для подключения удаленных принтеров.
+                ErrorLog ${APACHE_LOG_DIR}/error.log
+                CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+                SSLEngine on
+
+                SSLCertificateFile      /etc/ssl/certs/apache-selfsigned.crt
+                SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+                
+				<FilesMatch "\.(cgi|shtml|phtml|php)$">
+                                SSLOptions +StdEnvVars
+                </FilesMatch>
+                <Directory /usr/lib/cgi-bin>
+                                SSLOptions +StdEnvVars
+                </Directory>
+         </VirtualHost>
+         </IfModule>
+         
+		 student@student-virtual-machine:~$ sudo nano /etc/apache2/sites-available/000-default.conf
+		 <VirtualHost *:80>
+        
+                 Redirect "/" "https://10.0.2.12/"
+                 ServerAdmin webmaster@localhost
+                 DocumentRoot /var/www/html
+
+                 ErrorLog ${APACHE_LOG_DIR}/error.log
+                 CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+         </VirtualHost>
+
+         # Запускаем модули, проверяем синтаксис, и перезапускаем сервис
+         student@student-virtual-machine:~$ sudo a2enmod ssl
+         student@student-virtual-machine:~$ sudo a2enmod headers
+         student@student-virtual-machine:~$ sudo a2ensite default-ssl
+         student@student-virtual-machine:~$ sudo a2enconf ssl-params
+         student@student-virtual-machine:~$ sudo apache2ctl configtest
+         student@student-virtual-machine:~$ sudo systemctl restart apache2
 		 
-5. Используя diagrams.net, создайте L3 диаграмму вашей домашней сети или любой другой сети, с которой вы работали.
+		 # Заходим на сервер и наблюдаем результат
+		 https://ibb.co/Hn59SgQ
+		 
+4. Проверьте на TLS уязвимости произвольный сайт в интернете.
+         
+		 student@student-virtual-machine:~/netology/testssl.sh$ ./testssl.sh -U --sneaky https://netology.ru/
 
-         Набросал схему сети "из головы".
-		 https://ibb.co/WFXFQ9N
- 
+         ###########################################################
+             testssl.sh       3.1dev from https://testssl.sh/dev/
+             (0eb73d9 2021-12-07 08:55:54 -- )
 
-    
+               This program is free software. Distribution and
+                      modification under GPLv2 permitted.
+               USAGE w/o ANY WARRANTY. USE IT AT YOUR OWN RISK!
+
+                Please file bugs @ https://testssl.sh/bugs/
+
+         ###########################################################
+
+         Using "OpenSSL 1.0.2-chacha (1.0.2k-dev)" [~183 ciphers]
+         on student-virtual-machine:./bin/openssl.Linux.x86_64
+         (built: "Jan 18 17:12:17 2019", platform: "linux-x86_64")
+
+
+         Testing all IPv4 addresses (port 443): 172.67.21.207 104.22.40.171 104.22.41.171
+         ----------------------------------------------------------------------------------------------------------------
+         Start 2021-12-07 16:41:28        -->> 172.67.21.207:443 (netology.ru) <<--
+
+         Further IP addresses:   104.22.40.171 104.22.41.171 2606:4700:10::6816:28ab 2606:4700:10::6816:29ab 2606:4700:10::ac43:15cf 
+         rDNS (172.67.21.207):   --
+         Service detected:       HTTP
+
+
+         Testing vulnerabilities 
+
+         Heartbleed (CVE-2014-0160)                not vulnerable (OK), no heartbeat extension
+         CCS (CVE-2014-0224)                       not vulnerable (OK)
+         Ticketbleed (CVE-2016-9244), experiment.  not vulnerable (OK), no session tickets
+         ROBOT                                     not vulnerable (OK)
+         Secure Renegotiation (RFC 5746)           OpenSSL handshake didn't succeed
+         Secure Client-Initiated Renegotiation     not vulnerable (OK)
+         CRIME, TLS (CVE-2012-4929)                not vulnerable (OK)
+         BREACH (CVE-2013-3587)                    potentially NOT ok, "gzip" HTTP compression detected. - only supplied "/" tested
+                                                   Can be ignored for static pages or if no secrets in the page
+         POODLE, SSL (CVE-2014-3566)               not vulnerable (OK)
+         TLS_FALLBACK_SCSV (RFC 7507)              Downgrade attack prevention supported (OK)
+         SWEET32 (CVE-2016-2183, CVE-2016-6329)    VULNERABLE, uses 64 bit block ciphers
+         FREAK (CVE-2015-0204)                     not vulnerable (OK)
+         DROWN (CVE-2016-0800, CVE-2016-0703)      not vulnerable on this host and port (OK)
+                                                   make sure you don't use this certificate elsewhere with SSLv2 enabled services
+                                                   https://censys.io/ipv4?q=0E745E5E77A60345EB6E6B33B99A36286C2203D687F3377FBC685B2434518C53 could help you to find out
+         LOGJAM (CVE-2015-4000), experimental      not vulnerable (OK): no DH EXPORT ciphers, no DH key detected with <= TLS 1.2
+         BEAST (CVE-2011-3389)                     TLS1: ECDHE-RSA-AES128-SHA AES128-SHA ECDHE-RSA-AES256-SHA AES256-SHA DES-CBC3-SHA 
+                                                   VULNERABLE -- but also supports higher protocols  TLSv1.1 TLSv1.2 (likely mitigated)
+         LUCKY13 (CVE-2013-0169), experimental     potentially VULNERABLE, uses cipher block chaining (CBC) ciphers with TLS. Check patches
+         Winshock (CVE-2014-6321), experimental    not vulnerable (OK)
+         RC4 (CVE-2013-2566, CVE-2015-2808)        no RC4 ciphers detected (OK)
+
+
+         Done 2021-12-07 16:42:01 [  39s] -->> 172.67.21.207:443 (netology.ru) <<--
+		 
+		 # По остальным ip (104.22.41.171 104.22.40.171) вывод аналогичный.
+		 
+5. Установите на Ubuntu ssh сервер, сгенерируйте новый приватный ключ. Скопируйте свой публичный ключ на другой сервер. Подключитесь к серверу по SSH-ключу.
+
+         Используем 2 ВМ: student-virtual-machine (10.0.2.12) и study-server (10.0.2.7)
+		 # Генерируем и копируем ключи
+         student@student-virtual-machine:~$ ssh-keygen
+         Generating public/private rsa key pair.
+         Enter file in which to save the key (/home/student/.ssh/id_rsa): 
+         Enter passphrase (empty for no passphrase): 
+         Enter same passphrase again: 
+         Your identification has been saved in /home/student/.ssh/id_rsa
+         Your public key has been saved in /home/student/.ssh/id_rsa.pub
+         The key fingerprint is:
+         SHA256:ncV6YMhfP/DDbbMvGq/yPUAE1hR0B4PDqN+4/SQrXzo student@student-virtual-machine
+         The key's randomart image is:
+         +---[RSA 3072]----+
+         |          oB+o+..|
+         |       . o..*. o |
+         |        o.o.=.   |
+         |        .+ *.= . |
+         |        S.=+. *.o|
+         |          o.o  +o|
+         |           oo.o. |
+         |          + EXo .|
+         |           =B=+o.|
+         +----[SHA256]-----+
+
+         # Для копирования ключа используем утилиту ssh-copy-id
+         student@student-virtual-machine:~/netology/testssl.sh$ ssh-copy-id student@10.0.2.7
+         /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/student/.ssh/id_rsa.pub"
+         /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+         /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+
+         student@10.0.2.7's password: 
+
+         Number of key(s) added: 1
+
+         Now try logging into the machine, with:   "ssh 'student@10.0.2.7'"
+         and check to make sure that only the key(s) you wanted were added.
+         # Проверяем
+         student@student-virtual-machine:~/netology/testssl.sh$ ssh student@10.0.2.7
+         Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-91-generic x86_64)
+
+          * Documentation:  https://help.ubuntu.com
+          * Management:     https://landscape.canonical.com
+          * Support:        https://ubuntu.com/advantage
+
+           System information as of Tue Dec  7 14:56:24 UTC 2021
+
+           System load:  0.08               Processes:               227
+           Usage of /:   28.2% of 28.91GB   Users logged in:         1
+           Memory usage: 15%                IPv4 address for ens160: 10.0.2.7
+           Swap usage:   0%
+
+
+         104 updates can be installed immediately.
+         1 of these updates is a security update.
+         To see these additional updates run: apt list --upgradable
+
+
+         Last login: Tue Dec  7 14:54:12 2021 from 10.0.2.12
+         student@study-server:~$ exit
+         logout
+         Connection to 10.0.2.7 closed.
+         
+		 Screenshot:
+		 https://ibb.co/9VMH1br
+		 
+6. Переименуйте файлы ключей из задания 5. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный сервер осуществлялся по имени сервера.
+         
+		 # Переименовываем ключи
+		 student@student-virtual-machine:~$ cp /home/student/.ssh/id_rsa.pub /home/student/.ssh/id_rsa_study.pub
+         student@student-virtual-machine:~$ cp /home/student/.ssh/id_rsa /home/student/.ssh/id_rsa_study
+		 student@student-virtual-machine:~$ mv /home/student/.ssh/id_rsa /home/student/.ssh/id_rsa.old
+         student@student-virtual-machine:~$ mv /home/student/.ssh/id_rsa.pub /home/student/.ssh/id_rsa.pub.old
+		 student@student-virtual-machine:~$ ls -l /home/student/.ssh/
+         total 24
+         -rw-rw-r-- 1 student student  120 дек  7 19:05 config
+         -rw------- 1 student student 2622 дек  7 19:12 id_rsa.old
+         -rw-r--r-- 1 student student  585 дек  7 19:12 id_rsa.pub.old
+         -rw------- 1 student student 2622 дек  7 19:17 id_rsa_study
+         -rw-r--r-- 1 student student  585 дек  7 19:16 id_rsa_study.pub
+         -rw-r--r-- 1 student student  223 дек  7 18:57 known_hosts
+		 # Записываем конфигурацию для ключей и входа по имени
+		 student@student-virtual-machine:~$ nano ~/.ssh/config
+         Host study-server
+         Hostname 10.0.2.7
+         User student
+         PubKeyAuthentication yes
+         IdentityFile /home/student/.ssh/id_rsa_study
+		 # Перезапускаем службу
+		 student@student-virtual-machine:~$ sudo systemctl reload ssh.service
+		 # Проверяем
+		 student@student-virtual-machine:~$ ssh study-server 
+		 
+		 Screenshot
+		 https://ibb.co/nmnzxCb
+		 
+7. Соберите дамп трафика утилитой tcpdump в формате pcap, 100 пакетов. Откройте файл pcap в Wireshark.
+
+         # Проверяем наличие tcpdump
+         student@student-virtual-machine:~$ tcpdump --version
+         tcpdump version 4.9.3
+         libpcap version 1.10.0 (with TPACKET_V3)
+         OpenSSL 1.1.1j  16 Feb 2021
+		 # Собираем пакеты
+		 student@student-virtual-machine:~$ sudo tcpdump -c 100 -w dump2.pcap
+         tcpdump: listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
+         100 packets captured
+         244 packets received by filter
+         0 packets dropped by kernel
+         # Перебрасываем на машину с Wireshark
+		 student@student-virtual-machine:~$ sudo cp dump2.pcap /mnt/share/dump2.pcap
+		 # Смотрим результаты в Wireshark
+		 
+		 Screenshot
+		 https://ibb.co/sC1R551
