@@ -1,101 +1,49 @@
-# Домашнее задание к занятию "5.5. Оркестрация кластером Docker контейнеров на примере Docker Swarm"
+# Домашнее задание к занятию "6.1. Типы и структура СУБД"
 
 
 ## Обязательная задача 1
-Дайте письменые ответы на следующие вопросы:
+Архитектор ПО решил проконсультироваться у вас, какой тип БД лучше выбрать для хранения определенных данных.
 
-В чём отличие режимов работы сервисов в Docker Swarm кластере: replication и global?
-Какой алгоритм выбора лидера используется в Docker Swarm кластере?
-Что такое Overlay Network?
+Он вам предоставил следующие типы сущностей, которые нужно будет хранить в БД:
+
+Электронные чеки в json виде
+Склады и автомобильные дороги для логистической компании
+Генеалогические деревья
+Кэш идентификаторов клиентов с ограниченным временем жизни для движка аутенфикации
+Отношения клиент-покупка для интернет-магазина
+Выберите подходящие типы СУБД для каждой сущности и объясните свой выбор.
 ```
-Отличие replication и global в том, что в режиме replication явно указывается конкретное количество копий сервиса одноврвременно звапущенных на нодах. В режиме global сервис будет запущен на всех доступных нодах.
-
-Изначально лидером становиться тот manager, на котором первом запустили docker swarm init =). Далее используется алгоритм Raft - алгоритм для решения задач консенсуса в сети ненадёжных вычислений.
-Если обычный узел долго не получает сообщений от лидера, то он переходит в состояние «кандидат» и посылает другим узлам запрос на голосование. Другие узлы голосуют за того кандидата, от которого они получили первый запрос. 
-Если кандидат получает сообщение от лидера, то он снимает свою кандидатуру и возвращается в обычное состояние. Если кандидат получает большинство голосов, то он становится лидером. 
-Если же он не получил большинства (это случай, когда на кластере возникли сразу несколько кандидатов и голоса разделились), то кандидат ждёт случайное время и инициирует новую процедуру голосования.
-Процедура голосования повторяется, пока не будет выбран лидер.
-
-Overlay Network - это сеть поверх другой сети. В случае с docker swarm создается виртуальная сеть поверх основной сети (при условии прикрепленя хостов к одной сети). 
-Любые точки, которые являются частью этой виртуальной сети, выглядят друг для друга так, будто они связаны поверх свича и не заботятся об устройстве основной физической сети.
-Так-же можно включить шифрование в этой сети, повысив тем самым безопасность траффика.
-```
+Электронные чеки в json виде  - Документно ореинтриованная БД, документальный поиск их основная сфера использования.
+Склады и автомобильные дороги для логистической компании - Возможно графовая т.к. с помощью ребер можно описывать логистику или, сетевая где узел может иметь множество связей.
+Генеалогические деревья - однозначно иерархическая, она и по структуре напоминает генеалгическое дерево =)
+Кэш идентификаторов клиентов с ограниченным временем жизни для движка аутенфикации - БД Ключ-значение, классический пример использования.
+Отношения клиент-покупка для интернет-магазина - я считаю, что лучше использовать реляционную. Возможен большой объем собираемых данных, которые лучше хранить в таблицах.
+``` 
 ## Обязательная задача 2
-Создать ваш первый Docker Swarm кластер в Яндекс.Облаке
-Для получения зачета, вам необходимо предоставить скриншот из терминала (консоли), с выводом команды: docker node ls
-```
-Outputs:
+Вы создали распределенное высоконагруженное приложение и хотите классифицировать его согласно CAP-теореме. Какой классификации по CAP-теореме соответствует ваша система, если (каждый пункт - это отдельная реализация вашей системы и для каждого пункта надо привести классификацию):
 
-external_ip_address_node01 = "130.193.48.235"
-external_ip_address_node02 = "130.193.49.180"
-external_ip_address_node03 = "178.154.200.184"
-external_ip_address_node04 = "178.154.205.6"
-external_ip_address_node05 = "178.154.205.19"
-external_ip_address_node06 = "130.193.49.28"
-internal_ip_address_node01 = "192.168.101.11"
-internal_ip_address_node02 = "192.168.101.12"
-internal_ip_address_node03 = "192.168.101.13"
-internal_ip_address_node04 = "192.168.101.14"
-internal_ip_address_node05 = "192.168.101.15"
-internal_ip_address_node06 = "192.168.101.16"
-student@student-virtual-machine:~/netology/terraform$ ssh centos@130.193.48.235
-[centos@node01 ~]$ sudo -i
-[root@node01 ~]# docker node ls
-ID                            HOSTNAME             STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
-7825abxfit8788fsk7nui9zen *   node01.netology.yc   Ready     Active         Leader           20.10.12
-kgbaiyf0pf3uy23ykd2htm9jd     node02.netology.yc   Ready     Active         Reachable        20.10.12
-x78e4wt9f5mj12pfp855f9l59     node03.netology.yc   Ready     Active         Reachable        20.10.12
-pkmyk84cuje5j6s5iiz4gpltw     node04.netology.yc   Ready     Active                          20.10.12
-or1hbl3ok26i3y84hilmmql25     node05.netology.yc   Ready     Active                          20.10.12
-nmclkk65jeazchc4lne123zxk     node06.netology.yc   Ready     Active                          20.10.12
-[root@node01 ~]# 
+Данные записываются на все узлы с задержкой до часа (асинхронная запись)
+При сетевых сбоях, система может разделиться на 2 раздельных кластера
+Система может не прислать корректный ответ или сбросить соединение
+А согласно PACELC-теореме, как бы вы классифицировали данные реализации?
 ```
-```
-https://ibb.co/5KLyCq4
+Данные записываются на все узлы с задержкой до часа (асинхронная запись) - CA, PC/EL
+При сетевых сбоях, система может разделиться на 2 раздельных кластера - CP, PA/EC
+Система может не прислать корректный ответ или сбросить соединение - CP, PC/EC
 ```
 ## Обязательная задача 3
-Создать ваш первый, готовый к боевой эксплуатации кластер мониторинга, состоящий из стека микросервисов.
-Для получения зачета, вам необходимо предоставить скриншот из терминала (консоли), с выводом команды:
-docker service ls
+Могут ли в одной системе сочетаться принципы BASE и ACID? Почему?
 ```
-Outputs:
-
-external_ip_address_node01 = "130.193.48.235"
-external_ip_address_node02 = "130.193.49.180"
-external_ip_address_node03 = "178.154.200.184"
-external_ip_address_node04 = "178.154.205.6"
-external_ip_address_node05 = "178.154.205.19"
-external_ip_address_node06 = "130.193.49.28"
-internal_ip_address_node01 = "192.168.101.11"
-internal_ip_address_node02 = "192.168.101.12"
-internal_ip_address_node03 = "192.168.101.13"
-internal_ip_address_node04 = "192.168.101.14"
-internal_ip_address_node05 = "192.168.101.15"
-internal_ip_address_node06 = "192.168.101.16"
-student@student-virtual-machine:~/netology/terraform$ ssh centos@130.193.48.235
-[centos@node01 ~]$ sudo -i
-[root@node01 ~]# docker node ls
-ID                            HOSTNAME             STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
-7825abxfit8788fsk7nui9zen *   node01.netology.yc   Ready     Active         Leader           20.10.12
-kgbaiyf0pf3uy23ykd2htm9jd     node02.netology.yc   Ready     Active         Reachable        20.10.12
-x78e4wt9f5mj12pfp855f9l59     node03.netology.yc   Ready     Active         Reachable        20.10.12
-pkmyk84cuje5j6s5iiz4gpltw     node04.netology.yc   Ready     Active                          20.10.12
-or1hbl3ok26i3y84hilmmql25     node05.netology.yc   Ready     Active                          20.10.12
-nmclkk65jeazchc4lne123zxk     node06.netology.yc   Ready     Active                          20.10.12
-[root@node01 ~]# docker stack ls
-NAME               SERVICES   ORCHESTRATOR
-swarm_monitoring   8          Swarm
-[root@node01 ~]# docker service ls
-ID             NAME                                MODE         REPLICAS   IMAGE                                          PORTS
-iy339zeaysaf   swarm_monitoring_alertmanager       replicated   1/1        stefanprodan/swarmprom-alertmanager:v0.14.0    
-sbk4ioy8wijf   swarm_monitoring_caddy              replicated   1/1        stefanprodan/caddy:latest                      *:3000->3000/tcp, *:9090->9090/tcp, *:9093-9094->9093-9094/tcp
-zmg5r9wb883o   swarm_monitoring_cadvisor           global       6/6        google/cadvisor:latest                         
-oyk37eit1vy2   swarm_monitoring_dockerd-exporter   global       6/6        stefanprodan/caddy:latest                      
-x2gilju8mdqi   swarm_monitoring_grafana            replicated   1/1        stefanprodan/swarmprom-grafana:5.3.4           
-ti1aivd5emjy   swarm_monitoring_node-exporter      global       6/6        stefanprodan/swarmprom-node-exporter:v0.16.0   
-ljnp00hho4c2   swarm_monitoring_prometheus         replicated   1/1        stefanprodan/swarmprom-prometheus:v2.5.0       
-l1zpmouupto6   swarm_monitoring_unsee              replicated   1/1        cloudflare/unsee:v0.8.0
+Принципы BASE и ACID не могут сочетаться \, они противопоставлены друг другу. Принцип base кладет в свою основу доступность данных без согласовааности. В ACID наоборот, в основу положена согласованность данных.
 ```
+## Обязательная задача 4
+Вам дали задачу написать системное решение, основой которого бы послужили:
+фиксация некоторых значений с временем жизни
+реакция на истечение таймаута
+Вы слышали о key-value хранилище, которое имеет механизм Pub/Sub. Что это за система? Какие минусы выбора данной системы?
 ```
-https://ibb.co/Tb1J7MD
+В данном случае подходят Redis и RabbitMQ.
+Минусы:
+Высокое потребление оперативной памяти.
+Больше явных недостатков не имеет (все уже поправили).
 ```
