@@ -3,198 +3,322 @@
 
 ## Обязательная задача 1
 
-Используя docker поднимите инстанс PostgreSQL (версию 13). Данные БД сохраните в volume.
+Используя докер образ centos:7 как базовый и документацию по установке и запуску Elastcisearch.
+составьте Dockerfile-манифест для elasticsearch
 ```
-GNU nano 4.8                                                               docker-compose.yml                                                                         
-version: '3.8'
-services:
-  postgre13:
-    image: postgres:13
-    restart: always
-    environment:
-      - POSTGRES_PASSWORD=student
-      - POSTGRES_USER=student
-    volumes:
-      - ~/docker/psql_vol:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
-```
+student@student-virtual-machine:~/docker/elasticsearch$ nano dockerfile
+---------------------------------------------------------------------------
+FROM centos:7
+ENV PATH=/usr/lib:$PATH
 
-Подключитесь к БД PostgreSQL используя psql.
-Воспользуйтесь командой \? для вывода подсказки по имеющимся в psql управляющим командам.
-```
-tudent@student-virtual-machine:~/docker$ psql -h 127.0.0.1 -U student -d student
-Password for user student: 
-psql (12.9 (Ubuntu 12.9-0ubuntu0.20.04.1), server 13.6 (Debian 13.6-1.pgdg110+1))
-WARNING: psql major version 12, server major version 13.
-         Some psql features might not work.
-Type "help" for help.
+RUN yum install wget -y
 
-student=# \?
-----------------------------------------
-```
-вывода списка БД
-```
-student=# \l
-                               List of databases
-   Name    |  Owner  | Encoding |  Collate   |   Ctype    |  Access privileges  
------------+---------+----------+------------+------------+---------------------
- postgres  | student | UTF8     | en_US.utf8 | en_US.utf8 | 
- student   | student | UTF8     | en_US.utf8 | en_US.utf8 | 
- template0 | student | UTF8     | en_US.utf8 | en_US.utf8 | =c/student         +
-           |         |          |            |            | student=CTc/student
- template1 | student | UTF8     | en_US.utf8 | en_US.utf8 | =c/student         +
-           |         |          |            |            | student=CTc/student
-(4 rows)
-```
-подключения к БД
-```
-student=# \c student 
-psql (12.9 (Ubuntu 12.9-0ubuntu0.20.04.1), server 13.6 (Debian 13.6-1.pgdg110+1))
-WARNING: psql major version 12, server major version 13.
-         Some psql features might not work.
-You are now connected to database "student" as user "student".
-```
-вывода списка таблиц
-```
-# Для вывода примера, создал в БД student таблицу orders (дз 6.2).
-student=# \dt
-         List of relations
- Schema |  Name  | Type  |  Owner  
---------+--------+-------+---------
- public | orders | table | student
-(1 row)
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.1.0-linux-x86_64.tar.gz
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.1.0-linux-x86_64.tar.gz.sha512
+RUN yum install perl-Digest-SHA -y
+RUN shasum -a 512 -c elasticsearch-8.1.0-linux-x86_64.tar.gz.sha512
+RUN tar -xzf elasticsearch-8.1.0-linux-x86_64.tar.gz
 
-```
-вывода описания содержимого таблиц
-```
-student=# \d orders
-                  Table "public.orders"
-    Column    |  Type   | Collation | Nullable | Default 
---------------+---------+-----------+----------+---------
- id           | integer |           | not null | 
- наименование | text    |           |          | 
- цена         | integer |           |          | 
-Indexes:
-    "orders_pkey" PRIMARY KEY, btree (id)
+ADD elasticsearch.yml /elasticsearch-8.1.0/config/
+ENV ES_HOME=/elasticsearch-8.1.0
+RUN groupadd elastic
+RUN useradd -g elastic elastic
 
+RUN mkdir /var/lib/logs
+RUN chown elastic:elastic /var/lib/logs
+RUN mkdir /var/lib/data
+RUN chown elastic:elastic /var/lib/data
+RUN chown -R elastic:elastic /elasticsearch-8.1.0/
+
+USER elastic
+CMD ["/usr/sbin/init"]
+CMD ["/elasticsearch-8.1.0/bin/elasticsearch"]
+---------------------------------------------------------------------------
+student@student-virtual-machine:~/docker/elasticsearch$ nano elasticsearch.yml
+--------------------------------------------------------------------------- 
+cluster.name: netology_test
+discovery.type: single-node
+path.data: /var/lib/data
+path.logs: /var/lib/logs
+network.host: 0.0.0.0
+discovery.seed_hosts: ["127.0.0.1", "[::1"]
+xpack.security.enabled: false
+----------------------------------------------------------------------------
 ```
-выхода из psql
+соберите docker-образ и сделайте push в ваш docker.io репозиторий
 ```
-student=# \q
-student@student-virtual-machine:~/docker$
+student@student-virtual-machine:~/docker/elasticsearch$ docker build -t study_elastic .
+student@student-virtual-machine:~$ docker login
+student@student-virtual-machine:~$ docker tag study_elastic:latest evgennetology2022/homework
+student@student-virtual-machine:~$ docker push evgennetology2022/homework
+Using default tag: latest
+The push refers to repository [docker.io/evgennetology2022/homework]
+4cd216ab6414: Pushed 
+7d3ef7c10dfe: Pushed 
+58f119ba88d2: Pushed 
+f212cd83a000: Pushed 
+39c253b5157c: Pushed 
+c76aa9eb0b6b: Pushed 
+f27c6f79273e: Pushed 
+4c44a8dc3245: Pushed 
+94e74d25d23f: Pushed 
+c2b68ca3036b: Pushed 
+8683295fd72e: Pushed 
+e29e90de9a2a: Pushed 
+fb505b2650ea: Pushed 
+174f56854903: Mounted from library/centos 
+latest: digest: sha256:96afbc6cc180fee8c9a1347cf4d4ee2a8a553c47f8a28d30bb4e410b1710d4ea size: 3250
+
+https://hub.docker.com/layers/197910812/evgennetology2022/homework/latest/images/sha256-96afbc6cc180fee8c9a1347cf4d4ee2a8a553c47f8a28d30bb4e410b1710d4ea?context=repo
+```
+ответ elasticsearch на запрос пути / в json виде
+```
+student@student-virtual-machine:~$ curl localhost:9200 /
+{
+  "name" : "5461c3c6ac24",
+  "cluster_name" : "netology_test",
+  "cluster_uuid" : "uAJWm9iMReyHiGypP6OU8A",
+  "version" : {
+    "number" : "8.1.0",
+    "build_flavor" : "default",
+    "build_type" : "tar",
+    "build_hash" : "3700f7679f7d95e36da0b43762189bab189bc53a",
+    "build_date" : "2022-03-03T14:20:00.690422633Z",
+    "build_snapshot" : false,
+    "lucene_version" : "9.0.0",
+    "minimum_wire_compatibility_version" : "7.17.0",
+    "minimum_index_compatibility_version" : "7.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+curl: (3) URL using bad/illegal format or missing URL
 ```
 
 ## Обязательная задача 2
 
-Используя psql создайте БД test_database.
+Ознакомтесь с документацией и добавьте в elasticsearch 3 индекса, в соответствии со таблицей:
 ```
-student@student-virtual-machine:~/docker$ psql -h 127.0.0.1 -U student -d student
-Password for user student: 
-psql (12.9 (Ubuntu 12.9-0ubuntu0.20.04.1), server 13.6 (Debian 13.6-1.pgdg110+1))
-WARNING: psql major version 12, server major version 13.
-         Some psql features might not work.
-Type "help" for help.
-
-student=# create database test_database;
-CREATE DATABASE
-student=# \l
-                                 List of databases
-     Name      |  Owner  | Encoding |  Collate   |   Ctype    |  Access privileges  
----------------+---------+----------+------------+------------+---------------------
- postgres      | student | UTF8     | en_US.utf8 | en_US.utf8 | 
- student       | student | UTF8     | en_US.utf8 | en_US.utf8 | 
- template0     | student | UTF8     | en_US.utf8 | en_US.utf8 | =c/student         +
-               |         |          |            |            | student=CTc/student
- template1     | student | UTF8     | en_US.utf8 | en_US.utf8 | =c/student         +
-               |         |          |            |            | student=CTc/student
- test_database | student | UTF8     | en_US.utf8 | en_US.utf8 | 
+student@student-virtual-machine:~$ curl -X PUT 'localhost:9200/ind-1' -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1, "number_of_replicas": 0}}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"ind-1"}
+student@student-virtual-machine:~$ curl -X PUT 'localhost:9200/ind-2' -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 2, "number_of_replicas": 1}}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"ind-2"}
+student@student-virtual-machine:~$ curl -X PUT 'localhost:9200/ind-3' -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 4, "number_of_replicas": 2}}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"ind-3"}
 ```
-Восстановите бэкап БД в test_database.
+Получите список индексов и их статусов, используя API и приведите в ответе на задание.
 ```
-student@student-virtual-machine:~/docker$ docker exec -it docker_postgre13_1 /bin/bash
-root@5c02333a5c6b:/# psql -U student test_database < /var/lib/postgresql/data/test_dump.sql 
-SET
-SET
-SET
-SET
-SET
- set_config 
-------------
- 
-(1 row)
-
-SET
-SET
-SET
-SET
-SET
-SET
-CREATE TABLE
-ERROR:  role "postgres" does not exist
-CREATE SEQUENCE
-ERROR:  role "postgres" does not exist
-ALTER SEQUENCE
-ALTER TABLE
-COPY 8
- setval 
---------
-      8
-(1 row)
-
-ALTER TABLE
+student@student-virtual-machine:~$ curl -X GET 'localhost:9200/_cat/indices?v'
+health status index uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   ind-1 uJ355c-aRcezsZUq77JtIw   1   0          0            0       225b           225b
+yellow open   ind-3 EsCsiX8ESsKOHiCpjIG34A   4   2          0            0       900b           900b
+yellow open   ind-2 tAp9hD-ASxCVgaQ3sosgWg   2   1          0            0       450b           450b
+student@student-virtual-machine:~$ curl -X GET http://localhost:9200/ind-1?pretty=true
+{
+  "ind-1" : {
+    "aliases" : { },
+    "mappings" : { },
+    "settings" : {
+      "index" : {
+        "routing" : {
+          "allocation" : {
+            "include" : {
+              "_tier_preference" : "data_content"
+            }
+          }
+        },
+        "number_of_shards" : "1",
+        "provided_name" : "ind-1",
+        "creation_date" : "1647525274897",
+        "number_of_replicas" : "0",
+        "uuid" : "uJ355c-aRcezsZUq77JtIw",
+        "version" : {
+          "created" : "8010099"
+        }
+      }
+    }
+  }
+}
+student@student-virtual-machine:~$ curl -X GET http://localhost:9200/ind-2?pretty=true
+{
+  "ind-2" : {
+    "aliases" : { },
+    "mappings" : { },
+    "settings" : {
+      "index" : {
+        "routing" : {
+          "allocation" : {
+            "include" : {
+              "_tier_preference" : "data_content"
+            }
+          }
+        },
+        "number_of_shards" : "2",
+        "provided_name" : "ind-2",
+        "creation_date" : "1647525327151",
+        "number_of_replicas" : "1",
+        "uuid" : "tAp9hD-ASxCVgaQ3sosgWg",
+        "version" : {
+          "created" : "8010099"
+        }
+      }
+    }
+  }
+}
+student@student-virtual-machine:~$ curl -X GET http://localhost:9200/ind-3?pretty=true
+{
+  "ind-3" : {
+    "aliases" : { },
+    "mappings" : { },
+    "settings" : {
+      "index" : {
+        "routing" : {
+          "allocation" : {
+            "include" : {
+              "_tier_preference" : "data_content"
+            }
+          }
+        },
+        "number_of_shards" : "4",
+        "provided_name" : "ind-3",
+        "creation_date" : "1647525388239",
+        "number_of_replicas" : "2",
+        "uuid" : "EsCsiX8ESsKOHiCpjIG34A",
+        "version" : {
+          "created" : "8010099"
+        }
+      }
+    }
+  }
+}
 ```
-Перейдите в управляющую консоль psql внутри контейнера.
-Подключитесь к восстановленной БД и проведите операцию ANALYZE для сбора статистики по таблице.
+Получите состояние кластера elasticsearch, используя API.
 ```
-root@5c02333a5c6b:/# psql -U student
-psql (13.6 (Debian 13.6-1.pgdg110+1))
-Type "help" for help.
-
-student=# \c test_database
-You are now connected to database "test_database" as user "student".
-test_database-# \dt
-         List of relations
- Schema |  Name  | Type  |  Owner  
---------+--------+-------+---------
- public | orders | table | student
-(1 row)
-test_database=# ANALYZE VERBOSE public.orders ;
-INFO:  analyzing "public.orders"
-INFO:  "orders": scanned 1 of 1 pages, containing 8 live rows and 0 dead rows; 8 rows in sample, 8 estimated total rows
-ANALYZE
+student@student-virtual-machine:~$ curl -X GET http://localhost:9200/_cluster/health?pretty=true
+{
+  "cluster_name" : "netology_test",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 8,
+  "active_shards" : 8,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 10,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 44.44444444444444
+}
 ```
-Используя таблицу pg_stats, найдите столбец таблицы orders с наибольшим средним значением размера элементов в байтах.
+Как вы думаете, почему часть индексов и кластер находится в состоянии yellow?
 ```
-test_database=# select max(avg_width) from pg_stats where tablename= 'orders' ;
- max 
------
-  16
-(1 row)
+Статус кластера "yellow" - потому как отсутсвуют другие ноды для репликации. Для индексов, "yellow" те, у кого указано количество реплик, но по факту реплик нету.
+```
+Удалите все индексы.
+```
+student@student-virtual-machine:~$ curl -X DELETE http://localhost:9200/ind-1?pretty=true
+{
+  "acknowledged" : true
+}
+student@student-virtual-machine:~$ curl -X DELETE http://localhost:9200/ind-2?pretty=true
+{
+  "acknowledged" : true
+}
+student@student-virtual-machine:~$ curl -X DELETE http://localhost:9200/ind-3?pretty=true
+{
+  "acknowledged" : true
+}
+student@student-virtual-machine:~$ curl -X GET 'http://localhost:9200/_cat/indices?v'
+health status index uuid pri rep docs.count docs.deleted store.size pri.store.size
 ```
 
 ## Обязательная задача 3
-Архитектор и администратор БД выяснили, что ваша таблица orders разрослась до невиданных размеров и поиск по ней занимает долгое время. 
-Вам, как успешному выпускнику курсов DevOps в нетологии предложили провести разбиение таблицы на 2 (шардировать на orders_1 - price>499 и orders_2 - price<=499).
-Предложите SQL-транзакцию для проведения данной операции.
+
+Создайте директорию {путь до корневой директории с elasticsearch в образе}/snapshots.
 ```
-#Вариант 1 - простое разбиение по диапазонам.
-create table orders_2 as select * from orders where (price <='499');
-create table orders_1 as select * from orders where (price >'499');
-#Вариант -2 Разделим таблицу через декларативное секционирование.
-alter table orders rename to old_orders;
-create table orders (id integer, title varchar(80), price integer) partition by range(price);
-create table orders_under499 partition of orders for values from ('0') to ('499');
-create table orders_over499 partition of orders for values from ('499') to (maxvalue);
-insert into orders select * from old_orders ;
-#Таблицу возможно было разделить при проектировании, использовав "варинант 2" или задейстовав механизм наследования (INHERITS).
+student@student-virtual-machine:~$ docker ps
+CONTAINER ID   IMAGE           COMMAND                  CREATED        STATUS        PORTS                                       NAMES
+5461c3c6ac24   study_elastic   "/elasticsearch-8.1.…"   46 hours ago   Up 46 hours   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp   modest_matsumoto
+student@student-virtual-machine:~$ docker exec -it modest_matsumoto /bin/bash 
+[elastic@5461c3c6ac24 /]$ mkdir /elasticsearch-8.1.0/snapshots
+[elastic@5461c3c6ac24 /]$ ls /elasticsearch-8.1.0
+LICENSE.txt  NOTICE.txt  README.asciidoc  bin  config  jdk  lib  logs  modules  plugins  snapshots
+[elastic@5461c3c6ac24 /]$ chown elastic:elastic /elasticsearch-8.1.0/snapshots 
+[elastic@5461c3c6ac24 /]$ vi /elasticsearch-8.1.0/config/elasticsearch.yml 
+------------------------------------------------------------
+path.repo: /elasticsearch-8.1.0/snapshots
+------------------------------------------------------------
+[elastic@5461c3c6ac24 /]$ exit
+
 ```
-## Обязательная задача 4
-Используя утилиту pg_dump создайте бекап БД test_database.
+Используя API зарегистрируйте данную директорию как snapshot repository c именем netology_backup.
 ```
-root@5c02333a5c6b:/# pg_dump -U student -d test_database > /var/lib/postgresql/data/test_database.sql
+student@student-virtual-machine:~$ docker restart modest_matsumoto 
+modest_matsumoto
+student@student-virtual-machine:~$ docker ps
+CONTAINER ID   IMAGE           COMMAND                  CREATED      STATUS         PORTS                                       NAMES
+5461c3c6ac24   study_elastic   "/elasticsearch-8.1.…"   2 days ago   Up 4 seconds   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp   modest_matsumoto
+student@student-virtual-machine:~$ curl -X PUT localhost:9200/_snapshot/netology_backup?pretty -H 'Content-Type: application/json' -d'{"type": "fs", "settings": { "location":"/elasticsearch-8.1.0/snapshots/netology_backup" }}'
+{
+  "acknowledged" : true
+}
+student@student-virtual-machine:~$ curl -X GET localhost:9200/_snapshot/netology_backup?pretty
+{
+  "netology_backup" : {
+    "type" : "fs",
+    "settings" : {
+      "location" : "/elasticsearch-8.1.0/snapshots/netology_backup"
+    }
+  }
+}
+
 ```
-Как бы вы доработали бэкап-файл, чтобы добавить уникальность значения столбца title для таблиц test_database?
+Создайте индекс test с 0 реплик и 1 шардом и приведите в ответе список индексов.
 ```
-alter table orders add constraint title_unique unique (title);
+student@student-virtual-machine:~$ curl -X PUT 'localhost:9200/ind-test' -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1, "number_of_replicas": 0}}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"ind-test"}
+student@student-virtual-machine:~$ curl -X GET 'localhost:9200/_cat/indices?v'
+health status index    uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   ind-test CEE-8iOaRDCqeKCFVAaYdA   1   0          0            0       225b           225b
 ```
+Создайте snapshot состояния кластера elasticsearch.
+```
+student@student-virtual-machine:~$ curl -X PUT localhost:9200/_snapshot/netology_backup/1sn?pretty
+{
+  "accepted" : true
+}
+student@student-virtual-machine:~$ docker exec modest_matsumoto ls /elasticsearch-8.1.0/snapshots/netology_backup
+index-0
+index.latest
+indices
+meta-UX5z8MBNReSi4pIN-9ngpQ.dat
+snap-UX5z8MBNReSi4pIN-9ngpQ.dat
+```
+Удалите индекс test и создайте индекс test-2. Приведите в ответе список индексов.
+```
+student@student-virtual-machine:~$ curl -X DELETE http://localhost:9200/ind-test?pretty=true
+{
+  "acknowledged" : true
+}
+student@student-virtual-machine:~$ curl -X PUT 'localhost:9200/ind-test2?pretty=true' -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1, "number_of_replicas": 0}}'
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "ind-test2"
+}student@student-virtual-machine:~$ curl -X GET 'localhost:9200/_cat/indices?v'
+health status index     uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   ind-test2 HmIxpPnNTAyWJr4kNmqtCg   1   0          0            0       225b           225b
+```
+Восстановите состояние кластера elasticsearch из snapshot, созданного ранее.
+```
+student@student-virtual-machine:~$ curl -X POST localhost:9200/_snapshot/netology_backup/1sn/_restore?pretty=true
+{
+  "accepted" : true
+}
+student@student-virtual-machine:~$ curl -X GET 'localhost:9200/_cat/indices?v'
+health status index     uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   ind-test2 HmIxpPnNTAyWJr4kNmqtCg   1   0          0            0       225b           225b
+green  open   ind-test  Jf61K7JSTFSV8sqUHinwmA   1   0          0            0       225b           225b
+
