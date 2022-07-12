@@ -1,0 +1,10 @@
+---
+  - name: Testing collection playbook
+    hosts: localhost
+    collections:
+      - my_own_namespace.yandex_cloud_elk
+    roles:
+      - my_own_role
+    vars:
+      - path: "/tmp/test.txt"
+      - content: "Test playbook"
