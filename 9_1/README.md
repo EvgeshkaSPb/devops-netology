@@ -31,7 +31,7 @@
 
 Созданы 2 схемы workflow
 
-[для работы с bug](https://github.com/EvgeshkaSPb/devops-netology/blob/main/9_1/HW91_Bug.xml)
+[для работы с bug](https://github.com/EvgeshkaSPb/devops-netology/blob/main/9_1/HW91_Bug.xml) 
 [для остальных типов задач](https://github.com/EvgeshkaSPb/devops-netology/blob/main/9_1/HW91_simple.xml)
 
 Для Kanban, в целях эксперимента, добавлены 2 дополнительных столбца "ON TEST" и "CLOSE".
