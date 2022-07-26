@@ -9,7 +9,7 @@
 
 ## Решение
 
-Предоставленный в рамках ДЗ playbook развернул 2 ВМ jenkins-master и jenkins-agent.
+Из предоставленного в рамках ДЗ playbook развернул 2 ВМ jenkins-master и jenkins-agent.
 jenkins-agent оказался неработоспособен ввиду сложных требований по совместимости Molecule-python-ansible.
 Создал собственный агент на платфоме Ubuntu 20.04 и установил в него набор приложений:  
 
@@ -43,8 +43,8 @@ OpenJDK 64-Bit Server VM (build 11.0.15+10-Ubuntu-0ubuntu0.20.04.1, mixed mode, 
 
 ## Основная часть
 
-1. Сделать Freestyle Job, который будет запускать `molecule test` из любого вашего репозитория с ролью.
-Решение:
+1. Сделать Freestyle Job, который будет запускать `molecule test` из любого вашего репозитория с ролью.  
+Решение:  
 Был создан репозиторий включающий себя playbook с ролями ссылка https://github.com/EvgenAnsible1/Jenkins
 Дополнительно, для работы molecule, была сделана настройка агента (PATH+EXTRA)=(/home/jenkins/.local/bin).  
 Команды shell Freestyle job
@@ -58,7 +58,7 @@ molecule test -s ubuntu_lastest
 
 </details>
 
-Вывод консоли Freestyle job:    
+Вывод консоли Freestyle job:
 <details><summary></summary>
 
 ```
