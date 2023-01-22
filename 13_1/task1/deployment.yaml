@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main
+  namespace: stage
+  labels:
+    app: main
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main
+  template:
+    metadata:
+      labels:
+        app: main
+    spec:
+      containers:
+      - name: frontend
+        image: evgennetology2022/13_1:frontend
+        ports:
+        - containerPort: 80
+      - name: backend
+        image: evgennetology2022/13_1:backend
+        ports:
+        - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: stage
+spec:
+  ports:
+    - name: frontend
+      port: 8000
+      targetPort: 80
+  selector:
+    app: frontend
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: stage
+spec:
+  ports:
+    - name: backend
+      port: 9000
+      targetPort: 9000
+  selector:
+    app: backend
+  type: ClusterIP 
